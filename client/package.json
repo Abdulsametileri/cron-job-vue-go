@@ -9,8 +9,10 @@
     "test:e2e": "vue-cli-service test:e2e"
   },
   "dependencies": {
+    "bootstrap": "^4.6.0",
+    "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
-    "vue": "^2.6.11",
+    "vue": "^2.6.12",
     "vue-router": "^3.2.0",
     "vuex": "^3.4.0"
   },

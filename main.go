@@ -16,6 +16,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+
+
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 
 	log.Println("Starting HTTP server at http://localhost:8080 ...")
