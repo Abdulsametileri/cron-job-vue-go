@@ -3,7 +3,7 @@ package telegramclient
 import (
 	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
-	"github.com/Abdulsametileri/cron-job-vue-go/repository/userrepo"
+	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -12,21 +12,28 @@ import (
 
 type TelegramClient interface {
 	GetMessages()
+	SendImage(telegramId int64, imageUrl string)
 }
 
 type telegramClient struct {
-	bot      *tgbotapi.BotAPI
-	userRepo userrepo.Repo
+	bot *tgbotapi.BotAPI
+	us  userservice.UserService
 }
 
-func NewTelegramClient(userRepo userrepo.Repo) TelegramClient {
+func (t telegramClient) SendImage(telegramId int64, imageUrl string) {
+	msg := tgbotapi.NewPhotoShare(telegramId, imageUrl)
+	_, err := t.bot.Send(msg)
+	fmt.Println(err)
+}
+
+func NewTelegramClient(us userservice.UserService) TelegramClient {
 	bot, err := tgbotapi.NewBotAPI(viper.GetString("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		log.Fatal("Error initializing telegram")
 	}
 	return &telegramClient{
-		bot:      bot,
-		userRepo: userRepo,
+		bot: bot,
+		us:  us,
 	}
 }
 
@@ -41,12 +48,12 @@ func (t telegramClient) GetMessages() {
 		if update.Message == nil {
 			continue
 		}
-		userTelegramId := update.Message.From.ID
+		userTelegramId := int64(update.Message.From.ID)
 		userTelegramName := update.Message.From.UserName
 		chatId := update.Message.Chat.ID
 
 		if update.Message.Text == "/token" {
-			user, err := t.userRepo.GetUserByTelegramId(userTelegramId)
+			user, err := t.us.GetUserByTelegramId(userTelegramId)
 			if err != nil {
 				t.bot.Send(tgbotapi.NewMessage(chatId, err.Error()))
 				continue
@@ -60,9 +67,9 @@ func (t telegramClient) GetMessages() {
 			tokenMsg := tgbotapi.NewMessage(chatId, fmt.Sprintf("%s", token))
 			tokenMsg.ReplyToMessageID = update.Message.MessageID
 
-			err = t.userRepo.AddUser(models.User{
+			err = t.us.AddUser(models.User{
 				Token:               token.String(),
-				TelegramId:          userTelegramId,
+				TelegramId:          int64(userTelegramId),
 				TelegramDisplayName: userTelegramName,
 			})
 			fmt.Println(err)

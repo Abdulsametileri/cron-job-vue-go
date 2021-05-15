@@ -10,7 +10,8 @@ import (
 
 type Repo interface {
 	AddUser(user models.User) error
-	GetUserByTelegramId(telegramId int) (models.User, error)
+	GetUserByTelegramId(telegramId int64) (models.User, error)
+	GetUserByToken(token string) (models.User, error)
 }
 
 type userRepo struct {
@@ -30,13 +31,19 @@ func (u userRepo) AddUser(user models.User) error {
 	return err
 }
 
-func (u userRepo) GetUserByTelegramId(telegramId int) (models.User, error) {
+func (u userRepo) GetUserByToken(token string) (models.User, error) {
+	filter := bson.M{"token": token}
+	return u.GetUserBySpecifiedFilter(filter)
+}
+
+func (u userRepo) GetUserByTelegramId(telegramId int64) (models.User, error) {
+	filter := bson.M{"telegramId": telegramId}
+	return u.GetUserBySpecifiedFilter(filter)
+}
+
+func (u userRepo) GetUserBySpecifiedFilter(filter bson.M) (models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	filter := bson.M{
-		"telegramId": telegramId,
-	}
 
 	var user models.User
 	err := u.collection.FindOne(ctx, filter).Decode(&user)

@@ -50,7 +50,7 @@ const defaultFormItem = {
   name: '',
   imgFile: null,
   time: '00:00:00',
-  repeatType: null,
+  repeatType: -1,
 }
 
 export default {
@@ -60,14 +60,14 @@ export default {
       show: true,
       marginTop: 'mt-3',
       repeatTypes: [
-        {value: null, text: this.$t('weekDays.default')},
-        {value: 0, text: this.$t('weekDays.sunday')},
+        {value: -1, text: this.$t('weekDays.default')},
         {value: 1, text: this.$t('weekDays.monday')},
         {value: 2, text: this.$t('weekDays.tuesday')},
         {value: 3, text: this.$t('weekDays.wednesday')},
         {value: 4, text: this.$t('weekDays.thursday')},
         {value: 5, text: this.$t('weekDays.friday')},
         {value: 6, text: this.$t('weekDays.saturday')},
+        {value: 0, text: this.$t('weekDays.sunday')},
         {value: 7, text: this.$t('weekDays.all')},
       ],
       form: {
@@ -87,7 +87,7 @@ export default {
         errorMsg += this.$t('formError.imgFile') + " "
       if (this.form.time === '')
         errorMsg += this.$t('formError.time') + " "
-      if (this.form.repeatType === null)
+      if (this.form.repeatType === -1)
         errorMsg += this.$t('formError.repeatType')
 
       if (errorMsg !== "") {
@@ -104,6 +104,7 @@ export default {
         return
 
       const formData = new FormData()
+      formData.append("token", this.form.token)
       formData.append("name", this.form.name)
       formData.append("file", this.form.imgFile)
       formData.append("fileType", this.form.imgFile.type)
