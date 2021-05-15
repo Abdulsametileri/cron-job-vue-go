@@ -1,11 +1,11 @@
-package main
+package config
 
 import (
 	"github.com/spf13/viper"
 	"log"
 )
 
-func SetupConfig() {
+func Setup() {
 	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {

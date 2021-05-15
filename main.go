@@ -3,7 +3,12 @@ package main
 import (
 	"embed"
 	"fmt"
+	"github.com/Abdulsametileri/cron-job-vue-go/config"
+	"github.com/Abdulsametileri/cron-job-vue-go/database"
+	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
+	"github.com/Abdulsametileri/cron-job-vue-go/repository/userrepo"
 	"github.com/go-co-op/gocron"
+	"github.com/spf13/viper"
 	"io/fs"
 	"log"
 	"net/http"
@@ -24,11 +29,15 @@ var indexToWeekDay = map[string]time.Weekday{
 }
 
 func main() {
-	SetupConfig()
+	config.Setup()
 
-	mongoClient := NewMongoClient()
+	mongoClient := database.Setup()
 
-	telegramClient := NewTelegramClient(mongoClient)
+	userCollection := mongoClient.Database(viper.GetString("MONGODB_DATABASE")).Collection("users")
+
+	userRepo := userrepo.NewUserRepository(userCollection)
+
+	telegramClient := telegramclient.NewTelegramClient(userRepo)
 	telegramClient.GetMessages()
 
 	distFS, err := fs.Sub(clientFS, "client/dist")
