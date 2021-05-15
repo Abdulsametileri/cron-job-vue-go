@@ -37,6 +37,8 @@ func TestUserRepo_AddUser(t *testing.T) {
 	userCollection, errCollection := setupCollection(client)
 	require.NoError(t, errCollection)
 
+	defer cleanCollection(t, userCollection)
+
 	user := models.User{
 		Token:               "123",
 		TelegramId:          123,
@@ -45,8 +47,6 @@ func TestUserRepo_AddUser(t *testing.T) {
 	userRepo := NewUserRepository(userCollection)
 	errAddUser := userRepo.AddUser(user)
 	require.NoError(t, errAddUser)
-
-	defer cleanCollection(t, userCollection)
 }
 
 func TestUserRepo_GetUserByTelegramId(t *testing.T) {
@@ -55,6 +55,8 @@ func TestUserRepo_GetUserByTelegramId(t *testing.T) {
 
 	userCollection, errCollection := setupCollection(client)
 	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, userCollection)
 
 	user := models.User{
 		Token:               "123",
@@ -72,8 +74,6 @@ func TestUserRepo_GetUserByTelegramId(t *testing.T) {
 	assert.Equal(t, user.Token, foundedUser.Token)
 	assert.Equal(t, user.TelegramId, foundedUser.TelegramId)
 	assert.Equal(t, user.TelegramDisplayName, foundedUser.TelegramDisplayName)
-
-	defer cleanCollection(t, userCollection)
 }
 
 func TestUserRepo_GetUserByTelegramId_NotExistUser(t *testing.T) {
@@ -82,6 +82,8 @@ func TestUserRepo_GetUserByTelegramId_NotExistUser(t *testing.T) {
 
 	userCollection, errCollection := setupCollection(client)
 	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, userCollection)
 
 	user := models.User{
 		Token:               "123",
@@ -100,6 +102,4 @@ func TestUserRepo_GetUserByTelegramId_NotExistUser(t *testing.T) {
 	assert.Equal(t, emptyUser.Token, foundedUser.Token)
 	assert.Equal(t, emptyUser.TelegramId, foundedUser.TelegramId)
 	assert.Equal(t, emptyUser.TelegramDisplayName, foundedUser.TelegramDisplayName)
-
-	defer cleanCollection(t, userCollection)
 }

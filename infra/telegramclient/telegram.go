@@ -46,13 +46,12 @@ func (t telegramClient) GetMessages() {
 		chatId := update.Message.Chat.ID
 
 		if update.Message.Text == "/token" {
-
 			user, err := t.userRepo.GetUserByTelegramId(userTelegramId)
 			if err != nil {
 				t.bot.Send(tgbotapi.NewMessage(chatId, err.Error()))
 				continue
 			}
-			if user.TelegramId > 0 {
+			if user.TelegramId != 0 {
 				t.bot.Send(tgbotapi.NewMessage(chatId, fmt.Sprintf("You have already token. %s", user.Token)))
 				continue
 			}

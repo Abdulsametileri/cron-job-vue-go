@@ -1,0 +1,31 @@
+{
+  "createAlarm": "Alarm Oluştur",
+  "listAlarm": "Alarmları Listele",
+  "telegramBotMsg": "Tokeni almak için aşağıdaki linkten botun adresine tıklayıp. /token yazın. Sonrasında botun gönderdiği tokeni token bölümüne yazın",
+  "fileUploadPlaceholder": "Resim Seç",
+  "fileDropPlaceholder": "Buraya bırakın",
+  "image": "Resim",
+  "documentName": "Dökümanın İsmi",
+  "time": "Saat ve dakika",
+  "timePickerPlaceHolder": "Saat seçin",
+  "repeatOptions": "Tekrarlama Ayarı",
+  "createAlarmBtn": "Alarmı Oluştur",
+  "resetAlarmForm": "Formu Resetle",
+  "weekDays": {
+    "default": "Seçiniz",
+    "sunday": "Pazar",
+    "monday": "Pazartesi",
+    "tuesday": "Salı",
+    "wednesday": "Çarşamba",
+    "thursday": "Perşembe",
+    "friday": "Cuma",
+    "saturday": "Cumartesi",
+    "all": "Hepsi"
+  },
+  "formError": {
+    "name": "İsim boş bırakılamaz.",
+    "imgFile": "Dosya bölümü boş bırakılamaz.",
+    "time": "Saat boş bırakılamaz.",
+    "repeatType": "Tekrarlama aralığı boş bırakılamaz."
+  }
+}

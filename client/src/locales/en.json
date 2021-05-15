@@ -1,0 +1,31 @@
+{
+  "createAlarm": "Create Alarm",
+  "listAlarm": "List Alarms",
+  "telegramBotMsg": "",
+  "fileUploadPlaceholder": "",
+  "fileDropPlaceholder": "",
+  "image": "Image",
+  "documentName": "Document Name",
+  "time": "Time",
+  "timePickerPlaceHolder": "Choose time",
+  "repeatOptions": "Repeat Options",
+  "createAlarmBtn": "Create Alarm",
+  "resetAlarmForm": "Reset Alarm Form",
+  "weekDays": {
+    "default": "Choose week day",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "all": "All days"
+  },
+  "formError": {
+    "name": "Name cannot be empty.",
+    "imgFile": "Image file cannot be empty.",
+    "time": "Time cannot leave blank.",
+    "repeatType": "Repeat type cannot be empty"
+  }
+}
