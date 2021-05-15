@@ -20,6 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="df20094a-6d4a-4e81-a752-0c46b1a62ac1" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/views/AlarmCreate.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/views/AlarmCreate.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,6 +43,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
   <component name="ProjectId" id="1sXBFc53vEAKXSraseLhK3a5OBd" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -50,9 +57,11 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$USER_HOME$" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="settings.webpack" />
+    <property name="restartRequiresConfirmation" value="false" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RunManager">
@@ -85,32 +94,66 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$" />
+      <path value="$PROJECT_DIR$/client" />
+    </ignored-roots>
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
     <state x="-1222" y="183" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1621010433342">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
     <state x="-1222" y="183" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621010433342" />
-    <state width="1878" height="287" key="GridCell.Tab.0.bottom" timestamp="1621009465493">
+    <state x="-1197" y="139" key="#xdebugger.evaluate" timestamp="1621064477355">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
-    <state width="1878" height="287" key="GridCell.Tab.0.bottom/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621009465493" />
-    <state width="1878" height="287" key="GridCell.Tab.0.center" timestamp="1621009465492">
+    <state x="-1197" y="139" key="#xdebugger.evaluate/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064477355" />
+    <state width="910" height="466" key="DebuggerActiveHint" timestamp="1621064560850">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
-    <state width="1878" height="287" key="GridCell.Tab.0.center/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621009465492" />
-    <state width="1878" height="287" key="GridCell.Tab.0.left" timestamp="1621009465492">
+    <state width="910" height="466" key="DebuggerActiveHint/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064560850" />
+    <state width="1878" height="354" key="GridCell.Tab.0.bottom" timestamp="1621064670215">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
-    <state width="1878" height="287" key="GridCell.Tab.0.left/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621009465492" />
-    <state width="1878" height="287" key="GridCell.Tab.0.right" timestamp="1621009465493">
+    <state width="1878" height="354" key="GridCell.Tab.0.bottom/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670215" />
+    <state width="1878" height="354" key="GridCell.Tab.0.center" timestamp="1621064670214">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
-    <state width="1878" height="287" key="GridCell.Tab.0.right/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621009465493" />
-    <state x="-1451" y="68" key="SettingsEditor" timestamp="1621010355463">
+    <state width="1878" height="354" key="GridCell.Tab.0.center/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670214" />
+    <state width="1878" height="354" key="GridCell.Tab.0.left" timestamp="1621064670214">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
-    <state x="-1451" y="68" key="SettingsEditor/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621010355463" />
+    <state width="1878" height="354" key="GridCell.Tab.0.left/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670214" />
+    <state width="1878" height="354" key="GridCell.Tab.0.right" timestamp="1621064670215">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state width="1878" height="354" key="GridCell.Tab.0.right/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670215" />
+    <state width="1878" height="354" key="GridCell.Tab.1.bottom" timestamp="1621064670217">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state width="1878" height="354" key="GridCell.Tab.1.bottom/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670217" />
+    <state width="1878" height="354" key="GridCell.Tab.1.center" timestamp="1621064670216">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state width="1878" height="354" key="GridCell.Tab.1.center/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670216" />
+    <state width="1878" height="354" key="GridCell.Tab.1.left" timestamp="1621064670216">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state width="1878" height="354" key="GridCell.Tab.1.left/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670216" />
+    <state width="1878" height="354" key="GridCell.Tab.1.right" timestamp="1621064670216">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state width="1878" height="354" key="GridCell.Tab.1.right/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621064670216" />
+    <state x="-1451" y="68" key="SettingsEditor" timestamp="1621063504648">
+      <screen x="-1920" y="-95" width="1920" height="1055" />
+    </state>
+    <state x="-1451" y="68" key="SettingsEditor/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621063504648" />
     <state x="-1359" y="331" key="git4idea.ui.GitResetDialog" timestamp="1621011753944">
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
@@ -119,5 +162,16 @@
       <screen x="-1920" y="-95" width="1920" height="1055" />
     </state>
     <state x="-1295" y="139" width="670" height="676" key="search.everywhere.popup/-1920.-95.1920.1055/0.25.1536.853@-1920.-95.1920.1055" timestamp="1621011049933" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/main.go</url>
+          <line>81</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

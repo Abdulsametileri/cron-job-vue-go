@@ -37,20 +37,20 @@
 <script>
 
 const repeatTypes = [
-  {value: 0, text: "Pazartesi"},
-  {value: 1, text: "Salı"},
-  {value: 2, text: "Çarşamba"},
-  {value: 3, text: "Perşembe"},
-  {value: 4, text: "Cuma"},
-  {value: 5, text: "Cumartesi"},
-  {value: 6, text: "Pazar"},
+  {value: 0, text: "Pazar"},
+  {value: 1, text: "Pazartesi"},
+  {value: 2, text: "Salı"},
+  {value: 3, text: "Çarşamba"},
+  {value: 4, text: "Perşembe"},
+  {value: 5, text: "Cuma"},
+  {value: 6, text: "Cumartesi"},
   {value: 7, text: "Her Gün"},
 ]
 
 const defaultFormItem = {
   name: '',
   imgFile: null,
-  time: '',
+  time: '00:00:00',
   repeatType: 7,
 }
 
@@ -85,9 +85,21 @@ export default {
       }
       return true
     },
-    onSubmit() {
-      if (!this.formValidation())
+    async onSubmit() {
+      if (false && !this.formValidation())
         return
+
+      const formData = new FormData()
+      formData.append("name", this.form.name)
+      formData.append("file", this.form.imgFile)
+      formData.append("time", this.form.time)
+      formData.append("repeatType", this.form.repeatType)
+
+      //const url = `${process.env.}`
+      await fetch("/api/create-alarm", {
+        method: "POST",
+        body: formData
+      })
 
       console.log(this.form)
     },
