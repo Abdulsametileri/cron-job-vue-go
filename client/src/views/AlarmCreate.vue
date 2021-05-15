@@ -35,7 +35,7 @@
 
       <b-form-group :class="marginTop" :label="$t('repeatOptions')" label-for="repeat">
         <b-form-select id="repeat" v-model="form.repeatType"
-                       :options="repeatTypes" required></b-form-select>
+                       :options="repeatTypes"></b-form-select>
       </b-form-group>
 
       <b-button type="submit" variant="primary">{{ $t('createAlarmBtn') }}</b-button>
@@ -77,6 +77,9 @@ export default {
   },
   methods: {
     formValidation() {
+      if (this.isDevelopment)
+        return true
+
       let errorMsg = ""
       if (this.form.name === '')
         errorMsg += this.$t('formError.name') + " "
@@ -97,12 +100,14 @@ export default {
       return true
     },
     async onSubmit() {
-      if (!this.isDevelopment && !this.formValidation())
+      if (!this.formValidation())
         return
 
       const formData = new FormData()
       formData.append("name", this.form.name)
       formData.append("file", this.form.imgFile)
+      formData.append("fileType", this.form.imgFile.type)
+      formData.append("fileName", this.form.imgFile.name)
       formData.append("time", this.form.time)
       formData.append("repeatType", this.form.repeatType)
 

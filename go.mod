@@ -3,6 +3,7 @@ module github.com/Abdulsametileri/cron-job-vue-go
 go 1.16
 
 require (
+	github.com/aws/aws-sdk-go v1.38.40 // indirect
 	github.com/go-co-op/gocron v1.5.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-cmp v0.5.5 // indirect
