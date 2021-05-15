@@ -24,9 +24,11 @@ var indexToWeekDay = map[string]time.Weekday{
 }
 
 func main() {
-	ConfigSetup()
+	SetupConfig()
 
-	telegramClient := NewTelegramClient()
+	mongoClient := NewMongoClient()
+
+	telegramClient := NewTelegramClient(mongoClient)
 	telegramClient.GetMessages()
 
 	distFS, err := fs.Sub(clientFS, "client/dist")

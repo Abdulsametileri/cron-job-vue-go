@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func ConfigSetup() {
+func SetupConfig() {
 	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {
