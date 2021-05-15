@@ -24,6 +24,11 @@ var indexToWeekDay = map[string]time.Weekday{
 }
 
 func main() {
+	ConfigSetup()
+
+	telegramClient := NewTelegramClient()
+	telegramClient.GetMessages()
+
 	distFS, err := fs.Sub(clientFS, "client/dist")
 	if err != nil {
 		log.Fatal(err)
@@ -81,13 +86,9 @@ func main() {
 
 		fmt.Println(jb)
 
-		//_, err = s.Every(1).Day().Saturday().At(gettime).Do(task)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-
-		//_, _ = s.Every(1).Hour().StartAt(specificTime).Do(task)
-		//fmt.Println(name, gettime, repeatType, file, header)
 	})
 
 	log.Println("Starting HTTP server at http://localhost:3000 ...")
