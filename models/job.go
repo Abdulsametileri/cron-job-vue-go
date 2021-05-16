@@ -1,16 +1,9 @@
 package models
 
-type JobStatus int
-
-const (
-	JobCancelled = iota + 1
-	JobScheduled
-)
-
 type Job struct {
-	Tag            string
-	UserTelegramId int64
-	ImageUrl       string
-	RepeatType     string
-	Time           string
+	Tag            string `json:"tag" bson:"tag"`
+	UserTelegramId int64  `json:"userTelegramId" bson:"userTelegramId"`
+	ImageUrl       string `json:"imageUrl" bson:"imageUrl"`
+	RepeatType     string `json:"repeatType" bson:"repeatType"`
+	Time           string `json:"time" bson:"time"`
 }

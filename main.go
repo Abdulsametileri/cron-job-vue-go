@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/config"
 	"github.com/Abdulsametileri/cron-job-vue-go/controllers"
 	"github.com/Abdulsametileri/cron-job-vue-go/database"

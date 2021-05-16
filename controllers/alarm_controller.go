@@ -32,6 +32,7 @@ var (
 	ErrDb                 = errors.New("DB error occured")
 	ErrTokenDoesNotExist  = errors.New("Token does not exist")
 	ErrS3Upload           = errors.New("Error uploading file to s3")
+	ErrDeleteFileS3       = errors.New("Error deleting file in s3")
 	ErrAddingJob          = errors.New("Error adding job to Db")
 )
 
@@ -107,8 +108,6 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	// job ilk defa mı create edilecek.
 
-	_, _, _ = uploadedFile, uploadedFileName, uploadedFileType
-
 	filePathOnS3, err := ac.aws.UploadToS3(uploadedFileName, uploadedFileType, uploadedFile)
 	if err != nil {
 		http.Error(w, ErrS3Upload.Error(), http.StatusBadRequest)
@@ -123,6 +122,11 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		Time:           gettime,
 	})
 	if err != nil {
+		err = ac.aws.DeleteFileInS3(filePathOnS3)
+		if err != nil {
+			http.Error(w, ErrDeleteFileS3.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, ErrAddingJob.Error(), http.StatusBadRequest)
 		return
 	}

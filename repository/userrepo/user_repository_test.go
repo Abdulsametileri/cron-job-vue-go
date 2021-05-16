@@ -3,27 +3,12 @@ package userrepo
 import (
 	"context"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
+	"github.com/Abdulsametileri/cron-job-vue-go/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"testing"
 )
-
-func setupDB() (*mongo.Client, error) {
-	client, err := mongo.
-		Connect(context.Background(),
-			options.Client().
-				ApplyURI("mongodb://localhost:27017/testReminder"))
-
-	return client, err
-}
-
-func setupCollection(client *mongo.Client) (*mongo.Collection, error) {
-	userCollection := client.Database("testReminder").Collection("users")
-	errDrop := userCollection.Drop(context.Background())
-	return userCollection, errDrop
-}
 
 func cleanCollection(t *testing.T, userCollection *mongo.Collection) {
 	errDrop := userCollection.Drop(context.Background())
@@ -31,10 +16,10 @@ func cleanCollection(t *testing.T, userCollection *mongo.Collection) {
 }
 
 func TestUserRepo_AddUser(t *testing.T) {
-	client, errSetupDB := setupDB()
+	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
-	userCollection, errCollection := setupCollection(client)
+	userCollection, errCollection := repository.SetupCollection(client, "users")
 	require.NoError(t, errCollection)
 
 	defer cleanCollection(t, userCollection)
@@ -50,10 +35,10 @@ func TestUserRepo_AddUser(t *testing.T) {
 }
 
 func TestUserRepo_GetUserByTelegramId(t *testing.T) {
-	client, errSetupDB := setupDB()
+	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
-	userCollection, errCollection := setupCollection(client)
+	userCollection, errCollection := repository.SetupCollection(client, "users")
 	require.NoError(t, errCollection)
 
 	defer cleanCollection(t, userCollection)
@@ -77,10 +62,10 @@ func TestUserRepo_GetUserByTelegramId(t *testing.T) {
 }
 
 func TestUserRepo_GetUserByTelegramId_NotExistUser(t *testing.T) {
-	client, errSetupDB := setupDB()
+	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
-	userCollection, errCollection := setupCollection(client)
+	userCollection, errCollection := repository.SetupCollection(client, "users")
 	require.NoError(t, errCollection)
 
 	defer cleanCollection(t, userCollection)
@@ -96,10 +81,10 @@ func TestUserRepo_GetUserByTelegramId_NotExistUser(t *testing.T) {
 }
 
 func TestUserRepo_GetUserByToken(t *testing.T) {
-	client, errSetupDB := setupDB()
+	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
-	userCollection, errCollection := setupCollection(client)
+	userCollection, errCollection := repository.SetupCollection(client, "users")
 	require.NoError(t, errCollection)
 
 	defer cleanCollection(t, userCollection)
@@ -123,10 +108,10 @@ func TestUserRepo_GetUserByToken(t *testing.T) {
 }
 
 func TestUserRepo_GetUserByToken_NotExistUser(t *testing.T) {
-	client, errSetupDB := setupDB()
+	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
-	userCollection, errCollection := setupCollection(client)
+	userCollection, errCollection := repository.SetupCollection(client, "users")
 	require.NoError(t, errCollection)
 
 	defer cleanCollection(t, userCollection)

@@ -31,11 +31,34 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 	}, nil
 }
 
+type jobSvc struct{}
+
+func (js *jobSvc) AddJob(job models.Job) error {
+	if job.ImageUrl == "error-scenario-with-s3" {
+		return ErrAddingJob
+	}
+	if job.ImageUrl == "error-scenario-job" {
+		return ErrAddingJob
+	}
+	return nil
+}
+
 type awsClient struct{}
 
 func (client awsClient) UploadToS3(fileName, fileType string, file multipart.File) (string, error) {
 	if fileName == "badFileName" {
 		return "", ErrS3Upload
 	}
-	return "https://remindercron.s3.eu-central-1.amazonaws.com/Screen+Shot+2021-05-12+at+09.39.43.png", nil
+	return fileName, nil
+}
+
+func (client awsClient) DeleteFileInS3(fileName string) error {
+	if fileName == "error-scenario-with-s3" {
+		return ErrDeleteFileS3
+	}
+	return nil
+}
+
+func (client awsClient) DetermineS3ImageUrl(fileName string) string {
+	return "https://remindercron.s3.eu-central-1.amazonaws.com/Screen+Shot+2021-05-12+at+09.39.43.png"
 }

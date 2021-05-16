@@ -53,8 +53,10 @@ func fileUploadRequest() (body *bytes.Buffer, contentType string) {
 
 func TestAlarmController(t *testing.T) {
 	userService := &userSvc{}
+	jobService := &jobSvc{}
 	awsClient := &awsClient{}
-	alarmCtrl := NewAlarmController(userService, awsClient, nil)
+
+	alarmCtrl := NewAlarmController(userService, jobService, awsClient, nil)
 
 	t.Run("Is Get Not Allowed", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/create-alarm", nil)
@@ -208,4 +210,50 @@ func TestAlarmController(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
 		assert.Equal(t, string(bodyd), writeErrorMsg(ErrS3Upload))
 	})
+
+	t.Run("When job created, job err occured, delete uploaded file in s3 also occured", func(t *testing.T) {
+		body, contentType := fileUploadRequest()
+
+		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+		req.Form.Set("token", "sametintokeni")
+		req.Form.Set("name", "name")
+		req.Form.Set("time", "23:14")
+		req.Form.Set("repeatType", "5")
+		req.Form.Set("fileName", "error-scenario-with-s3")
+		req.Form.Set("fileType", "image/png")
+
+		req.Header.Add("Content-Type", contentType)
+
+		alarmCtrl.CreateAlarm(w, req)
+
+		resp := w.Result()
+		bodyd, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, string(bodyd), writeErrorMsg(ErrDeleteFileS3))
+	})
+	t.Run("When job created, job err occured, delete uploaded file in s3 is success return add job error", func(t *testing.T) {
+		body, contentType := fileUploadRequest()
+
+		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+		req.Form.Set("token", "sametintokeni")
+		req.Form.Set("name", "name")
+		req.Form.Set("time", "23:14")
+		req.Form.Set("repeatType", "5")
+		req.Form.Set("fileName", "error-scenario-job")
+		req.Form.Set("fileType", "image/png")
+
+		req.Header.Add("Content-Type", contentType)
+
+		alarmCtrl.CreateAlarm(w, req)
+
+		resp := w.Result()
+		bodyd, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, string(bodyd), writeErrorMsg(ErrAddingJob))
+	})
+
 }
