@@ -27,5 +27,6 @@
     "imgFile": "Image file cannot be empty.",
     "time": "Time cannot leave blank.",
     "repeatType": "Repeat type cannot be empty"
-  }
+  },
+  "operationSuccess": "Operation has been made successfully"
 }

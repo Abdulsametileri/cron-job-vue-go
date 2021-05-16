@@ -8,6 +8,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
+import messages from '@/mixins/messages'
+
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
@@ -23,6 +25,8 @@ Vue.mixin({
         };
     },
 });
+
+Vue.mixin(messages)
 
 new Vue({
     router,

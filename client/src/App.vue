@@ -38,21 +38,24 @@ export default {
   },
   methods: {
     async addToken() {
-      if (this.token === ""){
+      if (this.token === "") {
         alert('Invalid token')
         return
       }
 
       try {
-        const { status } = await fetch("/api/validate-token?token=" + this.token, {
+        const res = await fetch("/api/validate-token?token=" + this.token, {
           method: "GET",
         })
-        if (status === 200) {
+
+        const {code, message} = await res.json()
+        if (code === 200) {
           this.isAuthenticated = true
-          Cookies.set("authenticate", true, {expires: 365})
-        } else {
-          alert('Invalid token')
+          Cookies.set("token", this.token, {expires: 365})
+          return
         }
+
+        this.showErrorMessage(message)
       } catch (e) {
         console.error(e)
         alert(e.message)
@@ -60,8 +63,8 @@ export default {
     }
   },
   created() {
-    this.isAuthenticated = Cookies.get("authenticate")
-    console.log(Cookies.get("authenticate"))
+    if (Cookies.get("token") && Cookies.get("token") !== "")
+      this.isAuthenticated = true
   }
 }
 </script>

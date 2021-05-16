@@ -36,12 +36,13 @@
 </template>
 
 <script>
+import Cookies from 'js-cookie'
+
 const defaultFormItem = {
-  token: '',
-  name: '',
+  name: 'asd',
   imgFile: null,
-  time: '',
-  repeatType: -1,
+  time: '22:22',
+  repeatType: 3,
 }
 
 export default {
@@ -94,19 +95,31 @@ export default {
       if (!this.formValidation())
         return
 
-      const formData = new FormData()
-      formData.append("token", this.form.token)
-      formData.append("name", this.form.name)
-      formData.append("file", this.form.imgFile)
-      formData.append("fileType", this.form.imgFile.type)
-      formData.append("fileName", this.form.imgFile.name)
-      formData.append("time", this.form.time)
-      formData.append("repeatType", this.form.repeatType)
+      try {
+        const formData = new FormData()
+        formData.append("token", Cookies.get('token'))
+        formData.append("name", this.form.name)
+        formData.append("file", this.form.imgFile)
+        formData.append("fileType", this.form.imgFile.type)
+        formData.append("fileName", this.form.imgFile.name)
+        formData.append("time", this.form.time)
+        formData.append("repeatType", this.form.repeatType)
 
-      await fetch("/api/create-alarm", {
-        method: "POST",
-        body: formData
-      })
+        const res = await fetch("/api/create-alarm", {
+          method: "POST",
+          body: formData
+        })
+        let k = await res.json()
+        console.log(k)
+
+        if (res.status === 200) {
+          this.$router.replace('/')
+          return
+        }
+
+      } catch (e) {
+        console.error(e)
+      }
     },
     onReset() {
       this.form = {

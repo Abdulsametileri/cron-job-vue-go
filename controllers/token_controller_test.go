@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -9,7 +10,8 @@ import (
 
 func TestTokenController(t *testing.T) {
 	us := &userSvc{}
-	tokenCtrl := NewTokenController(us)
+	bc := NewBaseController()
+	tokenCtrl := NewTokenController(bc, us)
 
 	t.Run("Any method except get is not allowed", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodPost, "/api/validate-token", nil)
@@ -19,8 +21,11 @@ func TestTokenController(t *testing.T) {
 		body, _ := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 
-		assert.Equal(t, resp.StatusCode, http.StatusNotFound)
-		assert.Equal(t, string(body), writeErrorMsg(ErrMethodNotAllowed))
+		props := &Props{}
+		_ = json.Unmarshal(body, props)
+
+		assert.Equal(t, props.Code, http.StatusNotFound)
+		assert.Equal(t, props.Message, ErrMethodNotAllowed.Error())
 	})
 	t.Run("Token does not exist error", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/validate-token", nil)
@@ -30,8 +35,11 @@ func TestTokenController(t *testing.T) {
 		body, _ := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 
-		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-		assert.Equal(t, string(body), writeErrorMsg(ErrTokenNotFound))
+		props := &Props{}
+		_ = json.Unmarshal(body, props)
+
+		assert.Equal(t, props.Code, http.StatusBadRequest)
+		assert.Equal(t, props.Message, ErrTokenNotFound.Error())
 	})
 	t.Run("user does not exist with specified token", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/validate-token/?token=not-exist-token", nil)
@@ -41,7 +49,10 @@ func TestTokenController(t *testing.T) {
 		body, _ := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 
-		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
-		assert.Equal(t, string(body), writeErrorMsg(ErrTokenDoesNotExist))
+		props := &Props{}
+		_ = json.Unmarshal(body, props)
+
+		assert.Equal(t, props.Code, http.StatusBadRequest)
+		assert.Equal(t, props.Message, ErrTokenDoesNotExist.Error())
 	})
 }

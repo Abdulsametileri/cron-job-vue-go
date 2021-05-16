@@ -27,5 +27,6 @@
     "imgFile": "Dosya bölümü boş bırakılamaz.",
     "time": "Saat boş bırakılamaz.",
     "repeatType": "Tekrarlama aralığı boş bırakılamaz."
-  }
+  },
+  "operationSuccess": "İşleminiz başarılı bir şekilde yapıldı."
 }

@@ -10,32 +10,34 @@ type TokenController interface {
 }
 
 type tokenController struct {
+	bc BaseController
 	us userservice.UserService
 }
 
-func NewTokenController(us userservice.UserService) TokenController {
+func NewTokenController(bc BaseController, us userservice.UserService) TokenController {
 	return &tokenController{
+		bc: bc,
 		us: us,
 	}
 }
 
 func (t tokenController) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, ErrMethodNotAllowed.Error(), http.StatusNotFound)
+		t.bc.Error(w, http.StatusNotFound, ErrMethodNotAllowed)
 		return
 	}
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		http.Error(w, ErrTokenNotFound.Error(), http.StatusBadRequest)
+		t.bc.Error(w, http.StatusBadRequest, ErrTokenNotFound)
 		return
 	}
 
 	user, err := t.us.GetUserByToken(token)
 	if err != nil || user.TelegramId == 0 {
-		http.Error(w, ErrTokenDoesNotExist.Error(), http.StatusBadRequest)
+		t.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExist)
 		return
 	}
 
-	w.WriteHeader()
+	t.bc.Data(w, http.StatusOK, nil, "")
 }

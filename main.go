@@ -49,8 +49,9 @@ func main() {
 	schedule := gocron.NewScheduler(location)
 	schedule.StartAsync()
 
-	tokenController := controllers.NewTokenController(userService)
-	alarmController := controllers.NewAlarmController(userService, jobService, awsClient, telegramClient, schedule)
+	baseController := controllers.NewBaseController()
+	tokenController := controllers.NewTokenController(baseController, userService)
+	alarmController := controllers.NewAlarmController(baseController, userService, jobService, awsClient, telegramClient, schedule)
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 

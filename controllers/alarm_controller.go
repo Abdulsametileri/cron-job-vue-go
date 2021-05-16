@@ -45,6 +45,7 @@ type AlarmController interface {
 }
 
 type alarmController struct {
+	bc  BaseController
 	us  userservice.UserService
 	js  jobservice.JobService
 	aws awsclient.AwsClient
@@ -52,10 +53,13 @@ type alarmController struct {
 	sch *gocron.Scheduler
 }
 
-func NewAlarmController(us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient,
+func NewAlarmController(
+	bc BaseController,
+	us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient,
 	tc telegramclient.TelegramClient,
 	sch *gocron.Scheduler) AlarmController {
 	return &alarmController{
+		bc:  bc,
 		us:  us,
 		js:  js,
 		aws: aws,
@@ -116,7 +120,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	searchByFields := make(map[string]interface{})
 	searchByFields["userTelegramId"] = user.TelegramId
-	searchByFields["imageUrl"] = ac.aws.DetermineS3ImageUrl(uploadedFileName)
+	searchByFields["imageUrl"] = ac.aws.DetermineS3ImageUrl(user.TelegramId, uploadedFileName)
 	searchByFields["repeatType"] = repeatType
 	searchByFields["time"] = gettime
 
@@ -131,7 +135,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filePathOnS3, err := ac.aws.UploadToS3(uploadedFileName, uploadedFileType, uploadedFile)
+	filePathOnS3, err := ac.aws.UploadToS3(user.TelegramId, uploadedFileName, uploadedFileType, uploadedFile)
 	if err != nil {
 		http.Error(w, ErrS3Upload.Error(), http.StatusBadRequest)
 		return

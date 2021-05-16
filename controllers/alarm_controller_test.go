@@ -9,12 +9,13 @@ import (
 )
 
 func TestAlarmController(t *testing.T) {
+	bc := NewBaseController()
 	userService := &userSvc{}
 	jobService := &jobSvc{}
 	awsClient := &awsClient{}
 	telegramClient := &telegramClient{}
 
-	alarmCtrl := NewAlarmController(userService, jobService, awsClient, telegramClient, nil)
+	alarmCtrl := NewAlarmController(bc, userService, jobService, awsClient, telegramClient, nil)
 
 	t.Run("Is Get Not Allowed", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/create-alarm", nil)
