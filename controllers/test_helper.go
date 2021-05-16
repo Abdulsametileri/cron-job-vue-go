@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +15,17 @@ import (
 
 func writeErrorMsg(err error) string {
 	return err.Error() + "\n"
+}
+
+func parseBody(w *httptest.ResponseRecorder) Props {
+	resp := w.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	props := Props{}
+	_ = json.Unmarshal(body, &props)
+
+	return props
 }
 
 func createHttpReq(method string, endpoint string, body *bytes.Buffer) (w *httptest.ResponseRecorder, req *http.Request) {

@@ -70,7 +70,7 @@ func NewAlarmController(
 
 func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, ErrMethodNotAllowed.Error(), http.StatusNotFound)
+		ac.bc.Error(w, http.StatusNotFound, ErrMethodNotAllowed)
 		return
 	}
 
@@ -83,38 +83,38 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	uploadedFileType := r.FormValue("fileType")
 
 	if token == "" {
-		http.Error(w, ErrTokenNotFound.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrTokenNotFound)
 		return
 	}
 
 	if name == "" {
-		http.Error(w, ErrNameNotFound.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrNameNotFound)
 		return
 	}
 
 	if gettime == "" {
-		http.Error(w, ErrTimeNotFound.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrTimeNotFound)
 		return
 	}
 
 	if repeatType == "" || repeatType == "-1" {
-		http.Error(w, ErrRepeatTypeNotFound.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrRepeatTypeNotFound)
 		return
 	}
 
 	if errFile != nil {
-		http.Error(w, ErrReadingFile.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrReadingFile)
 		return
 	}
 
 	user, err := ac.us.GetUserByToken(token)
 	if err != nil {
-		http.Error(w, ErrDb.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrDb)
 		return
 	}
 
 	if user.TelegramId == 0 {
-		http.Error(w, ErrTokenDoesNotExist.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExist)
 		return
 	}
 
@@ -126,18 +126,18 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	job, err := ac.js.GetJobByFields(searchByFields)
 	if err != nil {
-		http.Error(w, ErrGettingJob.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrGettingJob)
 		return
 	}
 
 	if job.Tag != "" {
-		http.Error(w, ErrJobAlreadyExist.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrJobAlreadyExist)
 		return
 	}
 
 	filePathOnS3, err := ac.aws.UploadToS3(user.TelegramId, uploadedFileName, uploadedFileType, uploadedFile)
 	if err != nil {
-		http.Error(w, ErrS3Upload.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrS3Upload)
 		return
 	}
 
@@ -151,10 +151,10 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		err = ac.aws.DeleteFileInS3(filePathOnS3)
 		if err != nil {
-			http.Error(w, ErrDeleteFileS3.Error(), http.StatusBadRequest)
+			ac.bc.Error(w, http.StatusBadRequest, ErrDeleteFileS3)
 			return
 		}
-		http.Error(w, ErrAddingJob.Error(), http.StatusBadRequest)
+		ac.bc.Error(w, http.StatusBadRequest, ErrAddingJob)
 		return
 	}
 
