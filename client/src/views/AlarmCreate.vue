@@ -1,15 +1,6 @@
 <template>
   <div>
     <b-form v-if="show" @submit.prevent="onSubmit" @reset.prevent="onReset">
-      <h5>{{ $t('telegramBotMsg') }}</h5>
-      <a target="_blank" href="https://t.me/reminder_1996_bot">Bot Link</a>
-
-      <div class="mt-3"></div>
-
-      <b-form-group label="Token" label-for="token">
-        <b-form-input id="token" v-model="form.token"></b-form-input>
-      </b-form-group>
-
       <b-form-group :label="$t('image')" label-for="id">
         <b-form-file
             id="file"

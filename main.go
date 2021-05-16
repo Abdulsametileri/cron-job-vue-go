@@ -49,10 +49,12 @@ func main() {
 	schedule := gocron.NewScheduler(location)
 	schedule.StartAsync()
 
+	tokenController := controllers.NewTokenController(userService)
 	alarmController := controllers.NewAlarmController(userService, jobService, awsClient, telegramClient, schedule)
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 
+	http.HandleFunc("/api/validate-token", tokenController.ValidateToken)
 	http.HandleFunc("/api/create-alarm", alarmController.CreateAlarm)
 
 	log.Println("Starting HTTP server at http://localhost:3000 ...")
