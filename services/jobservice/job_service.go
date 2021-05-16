@@ -6,6 +6,7 @@ import (
 )
 
 type JobService interface {
+	ListJobsByToken(token string) ([]models.Job, error)
 	AddJob(job models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
 }
@@ -18,6 +19,10 @@ func NewJobService(jRepo jobrepo.Repo) JobService {
 	return &jobService{
 		Repo: jRepo,
 	}
+}
+
+func (j jobService) ListJobsByToken(token string) ([]models.Job, error) {
+	return j.Repo.ListJobsByToken(token)
 }
 
 func (j jobService) AddJob(job models.Job) error {

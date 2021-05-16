@@ -45,6 +45,16 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 
 type jobSvc struct{}
 
+func (js *jobSvc) ListJobsByToken(token string) ([]models.Job, error) {
+	if token == "job-list-err" {
+		return nil, ErrGettingJobList
+	}
+	if token == "three-job-list-item" {
+		return make([]models.Job, 3), nil
+	}
+	return make([]models.Job, 0), nil
+}
+
 func (js *jobSvc) AddJob(job models.Job) error {
 	if job.ImageUrl == "error-scenario-with-s3" {
 		return ErrAddingJob

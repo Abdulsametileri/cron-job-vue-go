@@ -15,216 +15,294 @@ func TestAlarmController(t *testing.T) {
 
 	alarmCtrl := NewAlarmController(bc, userService, jobService, awsClient, telegramClient, nil)
 
-	t.Run("Is Get Not Allowed", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodGet, "/api/create-alarm", nil)
-		alarmCtrl.CreateAlarm(w, req)
+	t.Run("CreateAlarm", func(t *testing.T) {
+		t.Run("Is Get Not Allowed", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/create-alarm", nil)
+			alarmCtrl.CreateAlarm(w, req)
 
-		res := parseBody(w)
+			res := parseBody(w)
 
-		assert.Equal(t, res.Code, http.StatusNotFound)
-		assert.Equal(t, res.Message, ErrMethodNotAllowed.Error())
+			assert.Equal(t, res.Code, http.StatusNotFound)
+			assert.Equal(t, res.Message, ErrMethodNotAllowed.Error())
+		})
+		t.Run("Getting Token error", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrTokenNotFoundInDB.Error())
+		})
+		t.Run("Non empty token but getting empty name error", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
+			req.Form.Set("token", "token")
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrNameNotFound.Error())
+		})
+		t.Run("Non empty {token, name} but getting empty time error", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
+			req.Form.Set("token", "token")
+			req.Form.Set("name", "name")
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrTimeNotFound.Error())
+		})
+
+		t.Run("Non empty {token, name, time} but getting empty repeatType error", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
+			req.Form.Set("token", "token")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrRepeatTypeNotFound.Error())
+		})
+		t.Run("Non empty {token,name,time,repeatType} but getting reading image file err", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
+			req.Form.Set("token", "token")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrReadingFile.Error())
+		})
+		t.Run("Getting token err occured in db", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "db-err")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "test")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrDb.Error())
+		})
+
+		t.Run("when job exist db error", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "job-already-exist-db-error")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "arbitrary-name")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrGettingJob.Error())
+		})
+		t.Run("when job already exist error", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "job-already-exist")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "arbitrary-name")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrJobAlreadyExist.Error())
+		})
+
+		t.Run("Getting non exist token error", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "not-exist-token")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "test")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrTokenDoesNotExistInUrl.Error())
+		})
+		t.Run("Getting s3 upload error", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "sametintokeni")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "badFileName")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrS3Upload.Error())
+		})
+
+		t.Run("When job created, job err occured, delete uploaded file in s3 also occured", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "sametintokeni")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "error-scenario-with-s3")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrDeleteFileS3.Error())
+		})
+		t.Run("When job created, job err occured, delete uploaded file in s3 is success return add job error", func(t *testing.T) {
+			body, contentType := fileUploadRequest()
+
+			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+			req.Form.Set("token", "sametintokeni")
+			req.Form.Set("name", "name")
+			req.Form.Set("time", "23:14")
+			req.Form.Set("repeatType", "5")
+			req.Form.Set("fileName", "error-scenario-job")
+			req.Form.Set("fileType", "image/png")
+
+			req.Header.Add("Content-Type", contentType)
+
+			alarmCtrl.CreateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrAddingJob.Error())
+		})
 	})
-	t.Run("Getting Token error", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
-		alarmCtrl.CreateAlarm(w, req)
 
-		res := parseBody(w)
+	t.Run("ListAlarm", func(t *testing.T) {
+		t.Run("Is Post not allowed", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/list-alarm", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrTokenNotFound.Error())
-	})
-	t.Run("Non empty token but getting empty name error", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
-		req.Form.Set("token", "token")
+			res := parseBody(w)
 
-		alarmCtrl.CreateAlarm(w, req)
+			assert.Equal(t, res.Code, http.StatusNotFound)
+			assert.Equal(t, res.Message, ErrMethodNotAllowed.Error())
+		})
+		t.Run("Error when token not specified", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		res := parseBody(w)
+			res := parseBody(w)
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrNameNotFound.Error())
-	})
-	t.Run("Non empty {token, name} but getting empty time error", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
-		req.Form.Set("token", "token")
-		req.Form.Set("name", "name")
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrTokenDoesNotExistInUrl.Error())
+		})
 
-		alarmCtrl.CreateAlarm(w, req)
+		t.Run("Error occured in db when validating the token", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=db-err", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		res := parseBody(w)
+			res := parseBody(w)
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrTimeNotFound.Error())
-	})
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrDb.Error())
+		})
 
-	t.Run("Non empty {token, name, time} but getting empty repeatType error", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
-		req.Form.Set("token", "token")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
+		t.Run("Error user cannot exist given token", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=not-exist-token", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		alarmCtrl.CreateAlarm(w, req)
+			res := parseBody(w)
 
-		res := parseBody(w)
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrUserDoesNotExist.Error())
+		})
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrRepeatTypeNotFound.Error())
-	})
-	t.Run("Non empty {token,name,time,repeatType} but getting reading image file err", func(t *testing.T) {
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
-		req.Form.Set("token", "token")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
+		t.Run("Error getting the job list", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=job-list-err", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		alarmCtrl.CreateAlarm(w, req)
+			res := parseBody(w)
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrGettingJobList.Error())
+		})
 
-		res := parseBody(w)
+		t.Run("Getting job list empty", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=123", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrReadingFile.Error())
-	})
-	t.Run("Getting token err occured in db", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
+			res := parseBody(w)
+			assert.Equal(t, res.Code, http.StatusOK)
 
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "db-err")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "test")
-		req.Form.Set("fileType", "image/png")
+			val, _ := res.Data.([]interface{})
+			lenItems := len(val)
 
-		req.Header.Add("Content-Type", contentType)
+			assert.Equal(t, lenItems, 0)
+		})
 
-		alarmCtrl.CreateAlarm(w, req)
+		t.Run("Getting the job list item", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=three-job-list-item", nil)
+			alarmCtrl.ListAlarm(w, req)
 
-		res := parseBody(w)
+			res := parseBody(w)
+			assert.Equal(t, res.Code, http.StatusOK)
 
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrDb.Error())
-	})
+			val, _ := res.Data.([]interface{})
+			lenItems := len(val)
 
-	t.Run("when job exist db error", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "job-already-exist-db-error")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "arbitrary-name")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrGettingJob.Error())
-	})
-	t.Run("when job already exist error", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "job-already-exist")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "arbitrary-name")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrJobAlreadyExist.Error())
-	})
-
-	t.Run("Getting non exist token error", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "not-exist-token")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "test")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrTokenDoesNotExist.Error())
-	})
-	t.Run("Getting s3 upload error", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "sametintokeni")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "badFileName")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrS3Upload.Error())
-	})
-
-	t.Run("When job created, job err occured, delete uploaded file in s3 also occured", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "sametintokeni")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "error-scenario-with-s3")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrDeleteFileS3.Error())
-	})
-	t.Run("When job created, job err occured, delete uploaded file in s3 is success return add job error", func(t *testing.T) {
-		body, contentType := fileUploadRequest()
-
-		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
-		req.Form.Set("token", "sametintokeni")
-		req.Form.Set("name", "name")
-		req.Form.Set("time", "23:14")
-		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "error-scenario-job")
-		req.Form.Set("fileType", "image/png")
-
-		req.Header.Add("Content-Type", contentType)
-
-		alarmCtrl.CreateAlarm(w, req)
-
-		res := parseBody(w)
-
-		assert.Equal(t, res.Code, http.StatusBadRequest)
-		assert.Equal(t, res.Message, ErrAddingJob.Error())
+			assert.Equal(t, lenItems, 3)
+		})
 	})
 }

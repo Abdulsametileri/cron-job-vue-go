@@ -70,5 +70,7 @@ export default {
 </script>
 
 <style lang="scss">
-
+.modal-body {
+  white-space: pre-line !important;
+}
 </style>

@@ -39,10 +39,10 @@
 import Cookies from 'js-cookie'
 
 const defaultFormItem = {
-  name: 'asd',
+  name: '',
   imgFile: null,
-  time: '22:22',
-  repeatType: 3,
+  time: '',
+  repeatType: -1,
 }
 
 export default {
@@ -69,24 +69,18 @@ export default {
   },
   methods: {
     formValidation() {
-      if (this.isDevelopment)
-        return true
-
       let errorMsg = ""
       if (this.form.name === '')
-        errorMsg += this.$t('formError.name') + " "
+        errorMsg += this.$t('formError.name') + "\n"
       if (this.form.imgFile === null)
-        errorMsg += this.$t('formError.imgFile') + " "
+        errorMsg += this.$t('formError.imgFile') + "\n"
       if (this.form.time === '')
-        errorMsg += this.$t('formError.time') + " "
+        errorMsg += this.$t('formError.time') + "\n"
       if (this.form.repeatType === -1)
         errorMsg += this.$t('formError.repeatType')
 
       if (errorMsg !== "") {
-        this.$bvToast.toast(errorMsg, {
-          title: 'Error',
-          variant: 'danger',
-        })
+        this.showErrorMessage(errorMsg)
         return false
       }
       return true
@@ -109,14 +103,13 @@ export default {
           method: "POST",
           body: formData
         })
-        let k = await res.json()
-        console.log(k)
+        let {code, message} = await res.json()
 
-        if (res.status === 200) {
+        if (code === 200) {
           this.$router.replace('/')
           return
         }
-
+        this.showErrorMessage(message)
       } catch (e) {
         console.error(e)
       }

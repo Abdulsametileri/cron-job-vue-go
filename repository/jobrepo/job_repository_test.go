@@ -2,6 +2,7 @@ package jobrepo
 
 import (
 	"context"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository"
 	"github.com/google/uuid"
@@ -14,6 +15,57 @@ import (
 func cleanCollection(t *testing.T, jobCollection *mongo.Collection) {
 	errDrop := jobCollection.Drop(context.Background())
 	require.NoError(t, errDrop)
+}
+
+func TestJobRepository_ListJobsByToken_with3Items(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	job1 := models.Job{
+		Tag:            uuid.NewString(),
+		UserTelegramId: 123,
+		UserToken:      "samet",
+		ImageUrl:       "http://test",
+		RepeatType:     "1",
+		Time:           "11:55",
+	}
+	_, errAddJob := jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	job1.Time = "13:55"
+	job1.Tag = uuid.NewString()
+	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	job1.Time = "16:55"
+	job1.Tag = uuid.NewString()
+	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	jobRepo := NewJobRepository(jobCollection)
+	jobs, err := jobRepo.ListJobsByToken(job1.UserToken)
+	require.NoError(t, err)
+	fmt.Println(jobs)
+}
+
+func TestJobRepository_ListJobsByToken_withNoItem(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	jobRepo := NewJobRepository(jobCollection)
+	jobs, err := jobRepo.ListJobsByToken("test")
+	require.NoError(t, err)
+	require.Equal(t, len(jobs), 0)
 }
 
 func TestJobRepository_AddJob(t *testing.T) {

@@ -29,13 +29,13 @@ func (t tokenController) ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		t.bc.Error(w, http.StatusBadRequest, ErrTokenNotFound)
+		t.bc.Error(w, http.StatusBadRequest, ErrTokenNotFoundInDB)
 		return
 	}
 
 	user, err := t.us.GetUserByToken(token)
 	if err != nil || user.TelegramId == 0 {
-		t.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExist)
+		t.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExistInUrl)
 		return
 	}
 

@@ -4,44 +4,36 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/awsclient"
+	"github.com/Abdulsametileri/cron-job-vue-go/infra/cronclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
-	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
 	"net/http"
-	"time"
 )
 
-var IndexToWeekDay = map[string]time.Weekday{
-	"0": time.Sunday,
-	"1": time.Monday,
-	"2": time.Tuesday,
-	"3": time.Wednesday,
-	"4": time.Thursday,
-	"5": time.Friday,
-	"6": time.Saturday,
-}
-
 var (
-	ErrMethodNotAllowed   = errors.New("Method not allowed")
-	ErrTokenNotFound      = errors.New("You have to specify token")
-	ErrNameNotFound       = errors.New("You have to specify name")
-	ErrTimeNotFound       = errors.New("You have to specify time")
-	ErrRepeatTypeNotFound = errors.New("You have to specify repeat time")
-	ErrReadingFile        = errors.New("Error while reading image file")
-	ErrDb                 = errors.New("DB error occured")
-	ErrTokenDoesNotExist  = errors.New("Token does not exist")
-	ErrS3Upload           = errors.New("Error uploading file to s3")
-	ErrDeleteFileS3       = errors.New("Error deleting file in s3")
-	ErrAddingJob          = errors.New("Error adding job to Db")
-	ErrGettingJob         = errors.New("Error getting job in DB")
-	ErrJobAlreadyExist    = errors.New("Error you already create your job before")
+	ErrMethodNotAllowed       = errors.New("Method not allowed")
+	ErrTokenNotFoundInDB      = errors.New("You have to specify token")
+	ErrNameNotFound           = errors.New("You have to specify name")
+	ErrTimeNotFound           = errors.New("You have to specify time")
+	ErrRepeatTypeNotFound     = errors.New("You have to specify repeat time")
+	ErrReadingFile            = errors.New("Error while reading image file")
+	ErrDb                     = errors.New("DB error occured")
+	ErrTokenDoesNotExistInUrl = errors.New("Token does not exist")
+	ErrS3Upload               = errors.New("Error uploading file to s3")
+	ErrDeleteFileS3           = errors.New("Error deleting file in s3")
+	ErrAddingJob              = errors.New("Error adding job to Db")
+	ErrGettingJob             = errors.New("Error getting job in DB")
+	ErrJobAlreadyExist        = errors.New("Error you already create your job before")
+	ErrUserDoesNotExist       = errors.New("Error user does not exist")
+	ErrGettingJobList         = errors.New("Error getting the job list")
 )
 
 type AlarmController interface {
 	CreateAlarm(http.ResponseWriter, *http.Request)
+	ListAlarm(http.ResponseWriter, *http.Request)
 }
 
 type alarmController struct {
@@ -50,21 +42,21 @@ type alarmController struct {
 	js  jobservice.JobService
 	aws awsclient.AwsClient
 	tc  telegramclient.TelegramClient
-	sch *gocron.Scheduler
+	cc  cronclient.CronClient
 }
 
 func NewAlarmController(
 	bc BaseController,
 	us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient,
 	tc telegramclient.TelegramClient,
-	sch *gocron.Scheduler) AlarmController {
+	cc cronclient.CronClient) AlarmController {
 	return &alarmController{
 		bc:  bc,
 		us:  us,
 		js:  js,
 		aws: aws,
 		tc:  tc,
-		sch: sch,
+		cc:  cc,
 	}
 }
 
@@ -83,7 +75,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	uploadedFileType := r.FormValue("fileType")
 
 	if token == "" {
-		ac.bc.Error(w, http.StatusBadRequest, ErrTokenNotFound)
+		ac.bc.Error(w, http.StatusBadRequest, ErrTokenNotFoundInDB)
 		return
 	}
 
@@ -114,7 +106,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.TelegramId == 0 {
-		ac.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExist)
+		ac.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExistInUrl)
 		return
 	}
 
@@ -158,19 +150,41 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ac.sch.Every(1)
-	val, ok := IndexToWeekDay[repeatType]
-	if ok {
-		ac.sch.Day().Weekday(val)
-	} else {
-		ac.sch.Days()
-	}
-	ac.sch.At(gettime)
-
-	_, err = ac.sch.Do(func() {
+	ac.cc.Schedule(repeatType, gettime, func() {
 		err := ac.tc.SendImage(user.TelegramId, filePathOnS3)
 		fmt.Println(err)
 	})
 
-	fmt.Println(err)
+	ac.bc.Data(w, http.StatusOK, nil, "")
+}
+
+func (ac alarmController) ListAlarm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		ac.bc.Error(w, http.StatusNotFound, ErrMethodNotAllowed)
+		return
+	}
+
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		ac.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExistInUrl)
+		return
+	}
+
+	user, err := ac.us.GetUserByToken(token)
+	if err != nil {
+		ac.bc.Error(w, http.StatusBadRequest, err)
+		return
+	}
+	if user.TelegramId == 0 {
+		ac.bc.Error(w, http.StatusBadRequest, ErrUserDoesNotExist)
+		return
+	}
+
+	jobs, err := ac.js.ListJobsByToken(token)
+	if err != nil {
+		ac.bc.Error(w, http.StatusBadRequest, ErrGettingJobList)
+		return
+	}
+
+	ac.bc.Data(w, http.StatusOK, jobs, "")
 }
