@@ -49,7 +49,7 @@ const defaultFormItem = {
   token: '',
   name: '',
   imgFile: null,
-  time: '00:00:00',
+  time: '',
   repeatType: -1,
 }
 
