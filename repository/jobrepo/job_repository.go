@@ -10,6 +10,7 @@ import (
 )
 
 type Repo interface {
+	ListAllValidJobs() ([]models.Job, error)
 	ListJobsByToken(token string) ([]models.Job, error)
 	AddJob(models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
@@ -21,6 +22,27 @@ type jobRepository struct {
 
 func NewJobRepository(collection *mongo.Collection) Repo {
 	return &jobRepository{collection: collection}
+}
+
+func (j jobRepository) ListAllValidJobs() ([]models.Job, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cur, err := j.collection.Find(ctx, bson.M{
+		"status": models.JobValid,
+	})
+	if err != nil {
+		return make([]models.Job, 0), err
+	}
+	defer cur.Close(ctx)
+	var jobs []models.Job
+	if err = cur.All(ctx, &jobs); err != nil {
+		return make([]models.Job, 0), err
+	}
+	if jobs == nil {
+		return make([]models.Job, 0), nil
+	}
+	return jobs, nil
 }
 
 func (j jobRepository) ListJobsByToken(token string) ([]models.Job, error) {
@@ -38,6 +60,9 @@ func (j jobRepository) ListJobsByToken(token string) ([]models.Job, error) {
 	var jobs []models.Job
 	if err = cur.All(ctx, &jobs); err != nil {
 		return make([]models.Job, 0), err
+	}
+	if jobs == nil {
+		return make([]models.Job, 0), nil
 	}
 	return jobs, nil
 }

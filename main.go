@@ -44,7 +44,7 @@ func main() {
 	telegramClient := telegramclient.NewTelegramClient(userService)
 	go telegramClient.GetMessages()
 
-	cronClient := cronclient.NewCronClient()
+	cronClient := cronclient.NewCronClient(jobService, telegramClient)
 
 	baseController := controllers.NewBaseController()
 	tokenController := controllers.NewTokenController(baseController, userService)

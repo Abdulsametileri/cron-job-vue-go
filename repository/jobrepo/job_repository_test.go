@@ -17,6 +17,45 @@ func cleanCollection(t *testing.T, jobCollection *mongo.Collection) {
 	require.NoError(t, errDrop)
 }
 
+func TestJobRepository_ListAllValidJobs(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	job1 := models.Job{
+		Tag:            uuid.NewString(),
+		UserTelegramId: 123,
+		UserToken:      "samet",
+		ImageUrl:       "http://test",
+		RepeatType:     "2",
+		Time:           "18:55",
+		Status:         models.JobValid,
+	}
+	_, errAddJob := jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	job1.Time = "13:55"
+	job1.RepeatType = "4"
+	job1.Tag = uuid.NewString()
+	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	job1.Time = "16:55"
+	job1.Tag = uuid.NewString()
+	job1.Status = models.JobDeleted
+	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
+	require.NoError(t, errAddJob)
+
+	jobRepo := NewJobRepository(jobCollection)
+	jobs, err := jobRepo.ListAllValidJobs()
+	require.NoError(t, err)
+	require.Equal(t, len(jobs), 2)
+}
+
 func TestJobRepository_ListJobsByToken_with3Items(t *testing.T) {
 	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)

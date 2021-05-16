@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/awsclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/cronclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
@@ -135,10 +134,13 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	err = ac.js.AddJob(models.Job{
 		Tag:            uuid.New().String(),
+		Name:           name,
 		UserTelegramId: user.TelegramId,
+		UserToken:      user.Token,
 		ImageUrl:       filePathOnS3,
 		RepeatType:     repeatType,
 		Time:           gettime,
+		Status:         models.JobValid,
 	})
 	if err != nil {
 		err = ac.aws.DeleteFileInS3(filePathOnS3)
@@ -150,10 +152,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ac.cc.Schedule(repeatType, gettime, func() {
-		err := ac.tc.SendImage(user.TelegramId, filePathOnS3)
-		fmt.Println(err)
-	})
+	_ = ac.cc.Schedule(job)
 
 	ac.bc.Data(w, http.StatusOK, nil, "")
 }

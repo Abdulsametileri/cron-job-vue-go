@@ -65,7 +65,7 @@ func (client awsClient) UploadToS3(userId int64, fileName, fileType string, file
 		Body:        file,
 		ContentType: aws.String(fileType),
 	})
-
+	fmt.Println(err)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("Failed to upload image on s3 %v", err))
 	}
@@ -78,7 +78,7 @@ func (client awsClient) DetermineS3ImageUrl(userId int64, fileName string) strin
 	bucketName := viper.GetString("RM_AWS_BUCKET_NAME")
 	region := viper.GetString("RM_AWS_REGION")
 
-	filePath := fmt.Sprintf("https://%s.s3-%s.amazonaws.com/%d/%s", bucketName, region, userId, url.QueryEscape(fileName))
+	filePath := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%d/%s", bucketName, region, userId, url.QueryEscape(fileName))
 	return filePath
 }
 
