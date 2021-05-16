@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/config"
 	"github.com/Abdulsametileri/cron-job-vue-go/controllers"
 	"github.com/Abdulsametileri/cron-job-vue-go/database"
@@ -9,6 +10,7 @@ import (
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository/jobrepo"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository/userrepo"
+	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
 	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
@@ -35,9 +37,9 @@ func main() {
 	jobCollection := mongodb.Collection("jobs")
 	userRepo := userrepo.NewUserRepository(userCollection)
 	jobRepo := jobrepo.NewJobRepository(jobCollection)
-	_ = jobRepo
 
 	userService := userservice.NewUserService(userRepo)
+	jobService := jobservice.NewJobService(jobRepo)
 
 	telegramClient := telegramclient.NewTelegramClient(userService)
 	go telegramClient.GetMessages()
@@ -48,7 +50,7 @@ func main() {
 
 	awsClient := awsclient.NewAwsClient()
 
-	alarmController := controllers.NewAlarmController(userService, awsClient, schedule)
+	alarmController := controllers.NewAlarmController(userService, jobService, awsClient, schedule)
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 

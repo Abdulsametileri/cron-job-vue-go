@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"mime/multipart"
 )
@@ -18,7 +17,7 @@ func (uc *userSvc) GetUserByTelegramId(telegramId int64) (models.User, error) {
 
 func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 	if token == "db-err" {
-		return models.User{}, errors.New("some error occured")
+		return models.User{}, ErrDb
 	}
 
 	if token == "not-exist-token" {
@@ -35,5 +34,8 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 type awsClient struct{}
 
 func (client awsClient) UploadToS3(fileName, fileType string, file multipart.File) (string, error) {
+	if fileName == "badFileName" {
+		return "", ErrS3Upload
+	}
 	return "https://remindercron.s3.eu-central-1.amazonaws.com/Screen+Shot+2021-05-12+at+09.39.43.png", nil
 }

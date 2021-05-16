@@ -29,7 +29,7 @@ func createHttpReq(method string, endpoint string, body *bytes.Buffer) (w *httpt
 }
 
 func fileUploadRequest() (body *bytes.Buffer, contentType string) {
-	file, err := os.Open("../test.png")
+	file, err := os.Open("./test.png")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -184,7 +184,7 @@ func TestAlarmController(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
 		assert.Equal(t, string(bodyd), writeErrorMsg(ErrTokenDoesNotExist))
 	})
-	t.Run("Getting success when I form params succesfully specified", func(t *testing.T) {
+	t.Run("Getting s3 upload error", func(t *testing.T) {
 		body, contentType := fileUploadRequest()
 
 		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
@@ -192,7 +192,7 @@ func TestAlarmController(t *testing.T) {
 		req.Form.Set("name", "name")
 		req.Form.Set("time", "23:14")
 		req.Form.Set("repeatType", "5")
-		req.Form.Set("fileName", "test")
+		req.Form.Set("fileName", "badFileName")
 		req.Form.Set("fileType", "image/png")
 
 		req.Header.Add("Content-Type", contentType)
@@ -205,6 +205,7 @@ func TestAlarmController(t *testing.T) {
 
 		fmt.Println(string(bodyd))
 
-		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, string(bodyd), writeErrorMsg(ErrS3Upload))
 	})
 }

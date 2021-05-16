@@ -3,8 +3,11 @@ package controllers
 import (
 	"errors"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/awsclient"
+	"github.com/Abdulsametileri/cron-job-vue-go/models"
+	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
 	"github.com/go-co-op/gocron"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 )
@@ -28,6 +31,8 @@ var (
 	ErrReadingFile        = errors.New("Error while reading image file")
 	ErrDb                 = errors.New("DB error occured")
 	ErrTokenDoesNotExist  = errors.New("Token does not exist")
+	ErrS3Upload           = errors.New("Error uploading file to s3")
+	ErrAddingJob          = errors.New("Error adding job to Db")
 )
 
 type AlarmController interface {
@@ -36,13 +41,15 @@ type AlarmController interface {
 
 type alarmController struct {
 	us  userservice.UserService
+	js  jobservice.JobService
 	aws awsclient.AwsClient
 	sch *gocron.Scheduler
 }
 
-func NewAlarmController(us userservice.UserService, aws awsclient.AwsClient, sch *gocron.Scheduler) AlarmController {
+func NewAlarmController(us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient, sch *gocron.Scheduler) AlarmController {
 	return &alarmController{
 		us:  us,
+		js:  js,
 		aws: aws,
 		sch: sch,
 	}
@@ -92,22 +99,35 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, ErrDb.Error(), http.StatusBadRequest)
 		return
 	}
+
 	if user.TelegramId == 0 {
 		http.Error(w, ErrTokenDoesNotExist.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// job ilk defa mı create edilecek.
+
 	_, _, _ = uploadedFile, uploadedFileName, uploadedFileType
 
-	/*
-		filePathOnS3, err := ac.awsClient.UploadToS3(uploadedFileName, uploadedFileType, uploadedFile)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Println(filePathOnS3)
+	filePathOnS3, err := ac.aws.UploadToS3(uploadedFileName, uploadedFileType, uploadedFile)
+	if err != nil {
+		http.Error(w, ErrS3Upload.Error(), http.StatusBadRequest)
+		return
+	}
 
-		ac.sch.Every(1)
+	err = ac.js.AddJob(models.Job{
+		Tag:            uuid.New().String(),
+		UserTelegramId: user.TelegramId,
+		ImageUrl:       filePathOnS3,
+		RepeatType:     repeatType,
+		Time:           gettime,
+	})
+	if err != nil {
+		http.Error(w, ErrAddingJob.Error(), http.StatusBadRequest)
+		return
+	}
+
+	/*	ac.sch.Every(1)
 
 		val, ok := IndexToWeekDay[repeatType]
 		if ok {

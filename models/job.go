@@ -11,6 +11,6 @@ type Job struct {
 	Tag            string
 	UserTelegramId int64
 	ImageUrl       string
-	RepeatType     int
+	RepeatType     string
 	Time           string
 }

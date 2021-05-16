@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/spf13/viper"
 	"log"
@@ -14,7 +15,9 @@ import (
 )
 
 type AwsClient interface {
+	DeleteFileInS3(fileName string) error
 	UploadToS3(fileName, fileType string, file multipart.File) (string, error)
+	DetermineS3ImageUrl(fileName string) string
 }
 
 type awsClient struct {
@@ -38,14 +41,25 @@ func NewAwsClient() AwsClient {
 	return awsClient{session: sess}
 }
 
+func (client awsClient) DeleteFileInS3(fileName string) error {
+	svc := s3.New(client.session)
+
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(viper.GetString("RM_AWS_BUCKET_NAME")),
+		Key:    aws.String(fileName),
+	}
+	_, err := svc.DeleteObject(input)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return err
+}
+
 func (client awsClient) UploadToS3(fileName, fileType string, file multipart.File) (string, error) {
 	uploader := s3manager.NewUploader(client.session)
 
-	bucketName := viper.GetString("RM_AWS_BUCKET_NAME")
-	region := viper.GetString("RM_AWS_REGION")
-
 	_, err := uploader.Upload(&s3manager.UploadInput{
-		Bucket:      aws.String(bucketName),
+		Bucket:      aws.String(viper.GetString("RM_AWS_BUCKET_NAME")),
 		ACL:         aws.String("public-read"),
 		Key:         aws.String(fileName),
 		Body:        file,
@@ -56,7 +70,13 @@ func (client awsClient) UploadToS3(fileName, fileType string, file multipart.Fil
 		return "", errors.New(fmt.Sprintf("Failed to upload image on s3 %v", err))
 	}
 
-	filePath := "https://" + bucketName + "." + "s3-" + region + ".amazonaws.com/" + url.QueryEscape(fileName)
-
+	filePath := client.DetermineS3ImageUrl(fileName)
 	return filePath, nil
+}
+
+func (client awsClient) DetermineS3ImageUrl(fileName string) string {
+	bucketName := viper.GetString("RM_AWS_BUCKET_NAME")
+	region := viper.GetString("RM_AWS_REGION")
+	filePath := "https://" + bucketName + "." + "s3-" + region + ".amazonaws.com/" + url.QueryEscape(fileName)
+	return filePath
 }
