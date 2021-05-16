@@ -40,6 +40,8 @@ func main() {
 	userService := userservice.NewUserService(userRepo)
 	jobService := jobservice.NewJobService(jobRepo)
 
+	awsClient := awsclient.NewAwsClient()
+
 	telegramClient := telegramclient.NewTelegramClient(userService)
 	go telegramClient.GetMessages()
 
@@ -47,9 +49,7 @@ func main() {
 	schedule := gocron.NewScheduler(location)
 	schedule.StartAsync()
 
-	awsClient := awsclient.NewAwsClient()
-
-	alarmController := controllers.NewAlarmController(userService, jobService, awsClient, schedule)
+	alarmController := controllers.NewAlarmController(userService, jobService, awsClient, telegramClient, schedule)
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
 

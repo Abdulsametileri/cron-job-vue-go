@@ -60,9 +60,10 @@ func TestJobRepository_GetJobByFields(t *testing.T) {
 	jobRepo := NewJobRepository(jobCollection)
 
 	fields := make(map[string]interface{}, 0)
-	fields["userTelegramId"] = 123
-	fields["repeatType"] = "1"
-	fields["time"] = "11:55"
+	fields["userTelegramId"] = addedJob.UserTelegramId
+	fields["imageUrl"] = addedJob.ImageUrl
+	fields["repeatType"] = addedJob.RepeatType
+	fields["time"] = addedJob.Time
 
 	job, err := jobRepo.GetJobByFields(fields)
 	require.NoError(t, err)

@@ -55,8 +55,9 @@ func TestAlarmController(t *testing.T) {
 	userService := &userSvc{}
 	jobService := &jobSvc{}
 	awsClient := &awsClient{}
+	telegramClient := &telegramClient{}
 
-	alarmCtrl := NewAlarmController(userService, jobService, awsClient, nil)
+	alarmCtrl := NewAlarmController(userService, jobService, awsClient, telegramClient, nil)
 
 	t.Run("Is Get Not Allowed", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/create-alarm", nil)
@@ -211,6 +212,51 @@ func TestAlarmController(t *testing.T) {
 		assert.Equal(t, string(bodyd), writeErrorMsg(ErrS3Upload))
 	})
 
+	t.Run("when job exist db error", func(t *testing.T) {
+		body, contentType := fileUploadRequest()
+
+		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+		req.Form.Set("token", "job-already-exist-db-error")
+		req.Form.Set("name", "name")
+		req.Form.Set("time", "23:14")
+		req.Form.Set("repeatType", "5")
+		req.Form.Set("fileName", "arbitrary-name")
+		req.Form.Set("fileType", "image/png")
+
+		req.Header.Add("Content-Type", contentType)
+
+		alarmCtrl.CreateAlarm(w, req)
+
+		resp := w.Result()
+		bodyd, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, string(bodyd), writeErrorMsg(ErrGettingJob))
+	})
+	t.Run("when job already exist error", func(t *testing.T) {
+		body, contentType := fileUploadRequest()
+
+		w, req := createHttpReq(http.MethodPost, "/api/create-alarm", body)
+		req.Form.Set("token", "job-already-exist")
+		req.Form.Set("name", "name")
+		req.Form.Set("time", "23:14")
+		req.Form.Set("repeatType", "5")
+		req.Form.Set("fileName", "arbitrary-name")
+		req.Form.Set("fileType", "image/png")
+
+		req.Header.Add("Content-Type", contentType)
+
+		alarmCtrl.CreateAlarm(w, req)
+
+		resp := w.Result()
+		bodyd, _ := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+
+		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
+		assert.Equal(t, string(bodyd), writeErrorMsg(ErrJobAlreadyExist))
+	})
+
 	t.Run("When job created, job err occured, delete uploaded file in s3 also occured", func(t *testing.T) {
 		body, contentType := fileUploadRequest()
 
@@ -255,5 +301,4 @@ func TestAlarmController(t *testing.T) {
 		assert.Equal(t, resp.StatusCode, http.StatusBadRequest)
 		assert.Equal(t, string(bodyd), writeErrorMsg(ErrAddingJob))
 	})
-
 }

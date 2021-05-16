@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/awsclient"
+	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
@@ -34,6 +36,8 @@ var (
 	ErrS3Upload           = errors.New("Error uploading file to s3")
 	ErrDeleteFileS3       = errors.New("Error deleting file in s3")
 	ErrAddingJob          = errors.New("Error adding job to Db")
+	ErrGettingJob         = errors.New("Error getting job in DB")
+	ErrJobAlreadyExist    = errors.New("Error you already create your job before")
 )
 
 type AlarmController interface {
@@ -44,14 +48,18 @@ type alarmController struct {
 	us  userservice.UserService
 	js  jobservice.JobService
 	aws awsclient.AwsClient
+	tc  telegramclient.TelegramClient
 	sch *gocron.Scheduler
 }
 
-func NewAlarmController(us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient, sch *gocron.Scheduler) AlarmController {
+func NewAlarmController(us userservice.UserService, js jobservice.JobService, aws awsclient.AwsClient,
+	tc telegramclient.TelegramClient,
+	sch *gocron.Scheduler) AlarmController {
 	return &alarmController{
 		us:  us,
 		js:  js,
 		aws: aws,
+		tc:  tc,
 		sch: sch,
 	}
 }
@@ -106,7 +114,22 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// job ilk defa mı create edilecek.
+	searchByFields := make(map[string]interface{})
+	searchByFields["userTelegramId"] = user.TelegramId
+	searchByFields["imageUrl"] = ac.aws.DetermineS3ImageUrl(uploadedFileName)
+	searchByFields["repeatType"] = repeatType
+	searchByFields["time"] = gettime
+
+	job, err := ac.js.GetJobByFields(searchByFields)
+	if err != nil {
+		http.Error(w, ErrGettingJob.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if job.Tag != "" {
+		http.Error(w, ErrJobAlreadyExist.Error(), http.StatusBadRequest)
+		return
+	}
 
 	filePathOnS3, err := ac.aws.UploadToS3(uploadedFileName, uploadedFileType, uploadedFile)
 	if err != nil {
@@ -131,21 +154,19 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	/*	ac.sch.Every(1)
+	ac.sch.Every(1)
+	val, ok := IndexToWeekDay[repeatType]
+	if ok {
+		ac.sch.Day().Weekday(val)
+	} else {
+		ac.sch.Days()
+	}
+	ac.sch.At(gettime)
 
-		val, ok := IndexToWeekDay[repeatType]
-		if ok {
-			ac.sch.Day().Weekday(val)
-		} else {
-			ac.sch.Days()
-		}
-		ac.sch.At(gettime)
+	_, err = ac.sch.Do(func() {
+		err := ac.tc.SendImage(user.TelegramId, filePathOnS3)
+		fmt.Println(err)
+	})
 
-		_, err = ac.sch.Do(func() {
-
-		})
-
-		if err != nil {
-
-		}*/
+	fmt.Println(err)
 }

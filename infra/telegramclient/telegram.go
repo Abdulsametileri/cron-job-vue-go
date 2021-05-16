@@ -12,18 +12,12 @@ import (
 
 type TelegramClient interface {
 	GetMessages()
-	SendImage(telegramId int64, imageUrl string)
+	SendImage(telegramId int64, imageUrl string) error
 }
 
 type telegramClient struct {
 	bot *tgbotapi.BotAPI
 	us  userservice.UserService
-}
-
-func (t telegramClient) SendImage(telegramId int64, imageUrl string) {
-	msg := tgbotapi.NewPhotoShare(telegramId, imageUrl)
-	_, err := t.bot.Send(msg)
-	fmt.Println(err)
 }
 
 func NewTelegramClient(us userservice.UserService) TelegramClient {
@@ -35,6 +29,12 @@ func NewTelegramClient(us userservice.UserService) TelegramClient {
 		bot: bot,
 		us:  us,
 	}
+}
+
+func (t telegramClient) SendImage(telegramId int64, imageUrl string) error {
+	msg := tgbotapi.NewPhotoShare(telegramId, imageUrl)
+	_, err := t.bot.Send(msg)
+	return err
 }
 
 func (t telegramClient) GetMessages() {

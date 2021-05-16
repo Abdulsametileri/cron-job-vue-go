@@ -7,6 +7,7 @@ import (
 
 type JobService interface {
 	AddJob(job models.Job) error
+	GetJobByFields(map[string]interface{}) (models.Job, error)
 }
 
 type jobService struct {
@@ -21,4 +22,8 @@ func NewJobService(jRepo jobrepo.Repo) JobService {
 
 func (j jobService) AddJob(job models.Job) error {
 	return j.Repo.AddJob(job)
+}
+
+func (j jobService) GetJobByFields(m map[string]interface{}) (models.Job, error) {
+	return j.Repo.GetJobByFields(m)
 }
