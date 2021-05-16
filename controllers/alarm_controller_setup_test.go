@@ -45,6 +45,10 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 
 type jobSvc struct{}
 
+func (js *jobSvc) ListAllValidJobs() ([]models.Job, error) {
+	return make([]models.Job, 0), nil
+}
+
 func (js *jobSvc) ListJobsByToken(token string) ([]models.Job, error) {
 	if token == "job-list-err" {
 		return nil, ErrGettingJobList

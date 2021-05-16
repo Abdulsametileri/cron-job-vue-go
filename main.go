@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
 )
 
 //go:embed client/dist
@@ -57,5 +58,11 @@ func main() {
 	http.HandleFunc("/api/list-alarm", alarmController.ListAlarm)
 
 	log.Println("Starting HTTP server at http://localhost:3000 ...")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+
+	port := "3000"
+	if os.Getenv("port") != "" {
+		port = os.Getenv(port)
+	}
+
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
