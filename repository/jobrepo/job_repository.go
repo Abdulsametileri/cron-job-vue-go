@@ -2,6 +2,7 @@ package jobrepo
 
 import (
 	"context"
+	"errors"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,9 +12,10 @@ import (
 
 type Repo interface {
 	ListAllValidJobs() ([]models.Job, error)
-	ListJobsByToken(token string) ([]models.Job, error)
+	ListAllValidJobsByToken(token string) ([]models.Job, error)
 	AddJob(models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
+	DeleteJobByTag(tag string) error
 }
 
 type jobRepository struct {
@@ -45,13 +47,13 @@ func (j jobRepository) ListAllValidJobs() ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (j jobRepository) ListJobsByToken(token string) ([]models.Job, error) {
+func (j jobRepository) ListAllValidJobsByToken(token string) ([]models.Job, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 
 	findOptions := options.Find()
 	findOptions.SetSort(bson.D{{"_id", -1}})
-	filter := bson.M{"userToken": token}
+	filter := bson.M{"userToken": token, "status": models.JobValid}
 	cur, err := j.collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return make([]models.Job, 0), err
@@ -90,4 +92,19 @@ func (j jobRepository) GetJobByFields(fields map[string]interface{}) (models.Job
 	}
 
 	return job, err
+}
+
+func (j jobRepository) DeleteJobByTag(tag string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{
+		"tag": tag,
+	}
+	update := bson.D{{"$set", bson.D{{"status", models.JobDeleted}}}}
+
+	up, err := j.collection.UpdateOne(ctx, filter, update)
+	if up != nil && up.MatchedCount == 0 {
+		return errors.New("Job does not found with the given tag")
+	}
+	return err
 }

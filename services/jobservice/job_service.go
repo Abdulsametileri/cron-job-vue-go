@@ -6,10 +6,11 @@ import (
 )
 
 type JobService interface {
-	ListJobsByToken(token string) ([]models.Job, error)
+	ListAllValidJobsByToken(token string) ([]models.Job, error)
 	ListAllValidJobs() ([]models.Job, error)
 	AddJob(job models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
+	DeleteJobByTag(tag string) error
 }
 
 type jobService struct {
@@ -26,8 +27,8 @@ func (j jobService) ListAllValidJobs() ([]models.Job, error) {
 	return j.Repo.ListAllValidJobs()
 }
 
-func (j jobService) ListJobsByToken(token string) ([]models.Job, error) {
-	return j.Repo.ListJobsByToken(token)
+func (j jobService) ListAllValidJobsByToken(token string) ([]models.Job, error) {
+	return j.Repo.ListAllValidJobsByToken(token)
 }
 
 func (j jobService) AddJob(job models.Job) error {
@@ -36,4 +37,8 @@ func (j jobService) AddJob(job models.Job) error {
 
 func (j jobService) GetJobByFields(m map[string]interface{}) (models.Job, error) {
 	return j.Repo.GetJobByFields(m)
+}
+
+func (j jobService) DeleteJobByTag(tag string) error {
+	return j.Repo.DeleteJobByTag(tag)
 }

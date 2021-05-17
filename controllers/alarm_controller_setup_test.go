@@ -45,17 +45,24 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 
 type jobSvc struct{}
 
-func (js *jobSvc) ListAllValidJobs() ([]models.Job, error) {
-	return make([]models.Job, 0), nil
-}
-
-func (js *jobSvc) ListJobsByToken(token string) ([]models.Job, error) {
+func (js *jobSvc) ListAllValidJobsByToken(token string) ([]models.Job, error) {
 	if token == "job-list-err" {
 		return nil, ErrGettingJobList
 	}
 	if token == "three-job-list-item" {
 		return make([]models.Job, 3), nil
 	}
+	return make([]models.Job, 0), nil
+}
+
+func (js *jobSvc) DeleteJobByTag(tag string) error {
+	if tag == "error-tag" {
+		return ErrJobDelete
+	}
+	return nil
+}
+
+func (js *jobSvc) ListAllValidJobs() ([]models.Job, error) {
 	return make([]models.Job, 0), nil
 }
 

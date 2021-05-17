@@ -32,7 +32,11 @@ Vue.mixin({
                 {value: 6, text: this.$t('weekDays.saturday')},
                 {value: 0, text: this.$t('weekDays.sunday')},
                 {value: 7, text: this.$t('weekDays.all')},
-            ]
+            ],
+            indexStrToWeekDay: {
+                "-1": this.$t('weekDays.default'),
+                "1": this.$t('weekDays.monday'),
+            }
         };
     },
 });

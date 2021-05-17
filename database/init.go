@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,6 +17,6 @@ func Setup() *mongo.Client {
 	if err != nil {
 		log.Fatalf("Error when trying to connect mongodb database %v", err)
 	}
-
+	fmt.Println(err)
 	return client
 }

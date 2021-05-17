@@ -23,7 +23,7 @@ type telegramClient struct {
 func NewTelegramClient(us userservice.UserService) TelegramClient {
 	bot, err := tgbotapi.NewBotAPI(viper.GetString("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
-		log.Fatal("Error initializing telegram")
+		log.Fatalf("Error initializing telegram %v", err)
 	}
 	return &telegramClient{
 		bot: bot,
@@ -69,13 +69,12 @@ func (t telegramClient) GetMessages() {
 
 			err = t.us.AddUser(models.User{
 				Token:               token.String(),
-				TelegramId:          int64(userTelegramId),
+				TelegramId:          userTelegramId,
 				TelegramDisplayName: userTelegramName,
 			})
-			fmt.Println(err)
 
 			t.bot.Send(tokenMsg)
-			t.bot.Send(tgbotapi.NewMessage(chatId, "You have to put this token on alarm create form."))
+			t.bot.Send(tgbotapi.NewMessage(chatId, "You have to give this token on our site."))
 		} else {
 			t.bot.Send(tgbotapi.NewMessage(chatId, "Invalid command"))
 		}

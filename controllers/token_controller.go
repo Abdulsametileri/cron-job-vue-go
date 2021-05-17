@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
 	"net/http"
 )
@@ -35,6 +36,7 @@ func (t tokenController) ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	user, err := t.us.GetUserByToken(token)
 	if err != nil || user.TelegramId == 0 {
+		fmt.Println(err.Error())
 		t.bc.Error(w, http.StatusBadRequest, ErrTokenDoesNotExistInUrl)
 		return
 	}

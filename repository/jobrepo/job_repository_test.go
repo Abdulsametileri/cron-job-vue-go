@@ -2,12 +2,12 @@ package jobrepo
 
 import (
 	"context"
-	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository"
 	"github.com/google/uuid"
 	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
@@ -56,7 +56,7 @@ func TestJobRepository_ListAllValidJobs(t *testing.T) {
 	require.Equal(t, len(jobs), 2)
 }
 
-func TestJobRepository_ListJobsByToken_with3Items(t *testing.T) {
+func TestJobRepository_ListAllValidJobsByToken_with2Items(t *testing.T) {
 	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)
 
@@ -72,24 +72,27 @@ func TestJobRepository_ListJobsByToken_with3Items(t *testing.T) {
 		ImageUrl:       "http://test",
 		RepeatType:     "1",
 		Time:           "11:55",
+		Status:         models.JobValid,
 	}
 	_, errAddJob := jobCollection.InsertOne(context.Background(), job1)
 	require.NoError(t, errAddJob)
 
 	job1.Time = "13:55"
 	job1.Tag = uuid.NewString()
+	job1.Status = models.JobValid
 	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
 	require.NoError(t, errAddJob)
 
 	job1.Time = "16:55"
 	job1.Tag = uuid.NewString()
+	job1.Status = models.JobDeleted
 	_, errAddJob = jobCollection.InsertOne(context.Background(), job1)
 	require.NoError(t, errAddJob)
 
 	jobRepo := NewJobRepository(jobCollection)
-	jobs, err := jobRepo.ListJobsByToken(job1.UserToken)
+	jobs, err := jobRepo.ListAllValidJobsByToken(job1.UserToken)
 	require.NoError(t, err)
-	fmt.Println(jobs)
+	require.Equal(t, len(jobs), 2)
 }
 
 func TestJobRepository_ListJobsByToken_withNoItem(t *testing.T) {
@@ -102,7 +105,7 @@ func TestJobRepository_ListJobsByToken_withNoItem(t *testing.T) {
 	defer cleanCollection(t, jobCollection)
 
 	jobRepo := NewJobRepository(jobCollection)
-	jobs, err := jobRepo.ListJobsByToken("test")
+	jobs, err := jobRepo.ListAllValidJobsByToken("test")
 	require.NoError(t, err)
 	require.Equal(t, len(jobs), 0)
 }
@@ -191,4 +194,39 @@ func TestJobRepository_GetJobByFields_NotExistedJob(t *testing.T) {
 	assert.Equal(t, job.ImageUrl, emptyJob.ImageUrl)
 	assert.Equal(t, job.RepeatType, emptyJob.RepeatType)
 	assert.Equal(t, job.Time, emptyJob.Time)
+}
+
+func TestJobRepository_DeleteJobByTag(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	addedJob := models.Job{
+		Tag:            "123",
+		Name:           "test",
+		UserTelegramId: 123,
+		UserToken:      "123",
+		ImageUrl:       "http://s3..",
+		RepeatType:     "1",
+		Time:           "12:38",
+		Status:         models.JobValid,
+	}
+
+	_, err := jobCollection.InsertOne(context.Background(), addedJob)
+	require.NoError(t, err)
+
+	jobRepository := NewJobRepository(jobCollection)
+
+	err = jobRepository.DeleteJobByTag(addedJob.Tag)
+	require.NoError(t, err)
+
+	var jobFromDb models.Job
+	jobCollection.FindOne(context.Background(), bson.M{"tag": addedJob.Tag}).Decode(&jobFromDb)
+
+	require.Equal(t, jobFromDb.Tag, addedJob.Tag)
+	require.Equal(t, int(jobFromDb.Status), models.JobDeleted)
 }

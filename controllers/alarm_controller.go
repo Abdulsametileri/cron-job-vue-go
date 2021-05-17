@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/awsclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/cronclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
@@ -26,13 +27,16 @@ var (
 	ErrAddingJob              = errors.New("Error adding job to Db")
 	ErrGettingJob             = errors.New("Error getting job in DB")
 	ErrJobAlreadyExist        = errors.New("Error you already create your job before")
+	ErrJobDelete              = errors.New("Error deleting the speficied tag job in db")
 	ErrUserDoesNotExist       = errors.New("Error user does not exist")
 	ErrGettingJobList         = errors.New("Error getting the job list")
+	ErrTagDoesNotExistInUrl   = errors.New("Tag does not exist in the url")
 )
 
 type AlarmController interface {
 	CreateAlarm(http.ResponseWriter, *http.Request)
 	ListAlarm(http.ResponseWriter, *http.Request)
+	DeleteAlarm(http.ResponseWriter, *http.Request)
 }
 
 type alarmController struct {
@@ -100,6 +104,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	user, err := ac.us.GetUserByToken(token)
 	if err != nil {
+		fmt.Println(err)
 		ac.bc.Error(w, http.StatusBadRequest, ErrDb)
 		return
 	}
@@ -117,10 +122,12 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 
 	job, err := ac.js.GetJobByFields(searchByFields)
 	if err != nil {
+		fmt.Println(err)
 		ac.bc.Error(w, http.StatusBadRequest, ErrGettingJob)
 		return
 	}
 
+	fmt.Println(job.ImageUrl)
 	if job.Tag != "" {
 		ac.bc.Error(w, http.StatusBadRequest, ErrJobAlreadyExist)
 		return
@@ -132,7 +139,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ac.js.AddJob(models.Job{
+	addedJob := models.Job{
 		Tag:            uuid.New().String(),
 		Name:           name,
 		UserTelegramId: user.TelegramId,
@@ -141,7 +148,9 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		RepeatType:     repeatType,
 		Time:           gettime,
 		Status:         models.JobValid,
-	})
+	}
+	err = ac.js.AddJob(addedJob)
+
 	if err != nil {
 		err = ac.aws.DeleteFileInS3(filePathOnS3)
 		if err != nil {
@@ -152,7 +161,7 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = ac.cc.Schedule(job)
+	_ = ac.cc.Schedule(addedJob)
 
 	ac.bc.Data(w, http.StatusOK, nil, "")
 }
@@ -179,11 +188,32 @@ func (ac alarmController) ListAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobs, err := ac.js.ListJobsByToken(token)
+	jobs, err := ac.js.ListAllValidJobsByToken(token)
 	if err != nil {
 		ac.bc.Error(w, http.StatusBadRequest, ErrGettingJobList)
 		return
 	}
 
 	ac.bc.Data(w, http.StatusOK, jobs, "")
+}
+
+func (ac alarmController) DeleteAlarm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		ac.bc.Error(w, http.StatusNotFound, ErrMethodNotAllowed)
+		return
+	}
+
+	tag := r.URL.Query().Get("tag")
+	if tag == "" {
+		ac.bc.Error(w, http.StatusBadRequest, ErrTagDoesNotExistInUrl)
+		return
+	}
+
+	err := ac.js.DeleteJobByTag(tag)
+	if err != nil {
+		ac.bc.Error(w, http.StatusBadRequest, ErrJobDelete)
+		return
+	}
+
+	ac.bc.Data(w, http.StatusOK, nil, "")
 }

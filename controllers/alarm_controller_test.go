@@ -305,4 +305,31 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, lenItems, 3)
 		})
 	})
+
+	t.Run("DeleteAlarm", func(t *testing.T) {
+		t.Run("Is Get Not Allowed", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/delete-alarm", nil)
+			alarmCtrl.DeleteAlarm(w, req)
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusNotFound)
+			assert.Equal(t, res.Message, ErrMethodNotAllowed.Error())
+		})
+		t.Run("Is tag is speficied in url", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/delete-alarm", nil)
+			alarmCtrl.DeleteAlarm(w, req)
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrTagDoesNotExistInUrl.Error())
+		})
+		t.Run("Error occured when deleting the job in db with specified tag", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/delete-alarm?tag=error-tag", nil)
+			alarmCtrl.DeleteAlarm(w, req)
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusBadRequest)
+			assert.Equal(t, res.Message, ErrJobDelete.Error())
+		})
+	})
 }

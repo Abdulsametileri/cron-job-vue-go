@@ -27,7 +27,7 @@ func main() {
 
 	distFS, err := fs.Sub(clientFS, "client/dist")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error dist %v", err)
 	}
 
 	mongoClient := database.Setup()
@@ -56,6 +56,7 @@ func main() {
 	http.HandleFunc("/api/validate-token", tokenController.ValidateToken)
 	http.HandleFunc("/api/create-alarm", alarmController.CreateAlarm)
 	http.HandleFunc("/api/list-alarm", alarmController.ListAlarm)
+	http.HandleFunc("/api/delete-alarm", alarmController.DeleteAlarm)
 
 	log.Println("Starting HTTP server at http://localhost:3000 ...")
 

@@ -30,7 +30,8 @@ type cronClient struct {
 }
 
 func NewCronClient(js jobservice.JobService, tc telegramclient.TelegramClient) CronClient {
-	location, _ := time.LoadLocation("Europe/Istanbul")
+	location, err := time.LoadLocation("Europe/Istanbul")
+	fmt.Println(err)
 	scheduleClient := gocron.NewScheduler(location)
 	scheduleClient.StartAsync()
 
