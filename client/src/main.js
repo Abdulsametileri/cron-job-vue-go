@@ -35,6 +35,13 @@ Vue.mixin({
             indexStrToWeekDay: {
                 "-1": i18n.tc('weekDays.default'),
                 "1": i18n.tc('weekDays.monday'),
+                "2": i18n.tc('weekDays.tuesday'),
+                "3": i18n.tc('weekDays.wednesday'),
+                "4": i18n.tc('weekDays.thursday'),
+                "5": i18n.tc('weekDays.friday'),
+                "6": i18n.tc('weekDays.saturday'),
+                "0": i18n.tc('weekDays.sunday'),
+                "7": i18n.tc('weekDays.all'),
             }
         };
     },
