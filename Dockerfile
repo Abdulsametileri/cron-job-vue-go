@@ -8,7 +8,7 @@ COPY go.sum go.mod ./
 RUN go mod download
 COPY --from=VueBuilder client/dist client/dist
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main main.go
+RUN CGO_ENABLED=0 GOOS=linux go build --tags prod -o main main.go
 
 FROM alpine:3
 RUN apk update \

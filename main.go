@@ -46,7 +46,9 @@ func main() {
 	awsClient := awsclient.NewAwsClient()
 
 	telegramClient := telegramclient.NewTelegramClient(userService)
-	go telegramClient.GetMessages()
+	if !config.IsDebug {
+		go telegramClient.GetMessages()
+	}
 
 	cronClient := cronclient.NewCronClient(jobService, telegramClient)
 
