@@ -127,7 +127,6 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(job.ImageUrl)
 	if job.Tag != "" {
 		ac.bc.Error(w, http.StatusBadRequest, ErrJobAlreadyExist)
 		return
