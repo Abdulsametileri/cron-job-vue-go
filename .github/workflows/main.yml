@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Clean
-        run: docker rmi -f $(docker images -f "dangling=true" -q) || true
+      - name: Prune
+        run: docker system prune -f
 
       - name: Stop
         run: docker stop cjvg || true
