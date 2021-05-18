@@ -22,8 +22,11 @@ jobs:
           envkey_RM_AWS_REGION: ${{ secrets.RM_AWS_REGION }}
           envkey_RM_AWS_BUCKET_NAME: ${{ secrets.RM_AWS_BUCKET_NAME }}
 
+      - name: Stop
+        run: docker stop cjvg || true
+
       - name: Build
         run: docker build -t cron-job-vue-go .
 
       - name: Run
-        run: docker run --rm -d -p 3000:3000 --dns 8.8.8.8 cron-job-vue-go
+        run: docker run --name=cjvg --rm -d -p 3000:3000 --dns 8.8.8.8 cron-job-vue-go
