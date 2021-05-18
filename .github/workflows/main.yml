@@ -15,6 +15,7 @@ jobs:
       - name: Make envfile
         uses: SpicyPizza/create-envfile@v1
         with:
+          envkey_TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           envkey_MONGODB_URI: ${{ secrets.MONGODB_URI }}
           envkey_RM_AWS_ACCESS_KEY: ${{ secrets.RM_AWS_ACCESS_KEY }}
           envkey_RM_AWS_SECRET_KEY: ${{ secrets.RM_AWS_SECRET_KEY }}
