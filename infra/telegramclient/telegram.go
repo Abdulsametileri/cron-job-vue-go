@@ -13,6 +13,7 @@ import (
 type TelegramClient interface {
 	GetMessages()
 	SendImage(telegramId int64, imageUrl string) error
+	SendMessageForDebug(msg string)
 }
 
 type telegramClient struct {
@@ -29,6 +30,11 @@ func NewTelegramClient(us userservice.UserService) TelegramClient {
 		bot: bot,
 		us:  us,
 	}
+}
+
+func (t telegramClient) SendMessageForDebug(text string) {
+	msg := tgbotapi.NewMessage(513873156, text)
+	_, _ = t.bot.Send(msg)
 }
 
 func (t telegramClient) SendImage(telegramId int64, imageUrl string) error {
@@ -55,11 +61,11 @@ func (t telegramClient) GetMessages() {
 		if update.Message.Text == "/token" {
 			user, err := t.us.GetUserByTelegramId(userTelegramId)
 			if err != nil {
-				t.bot.Send(tgbotapi.NewMessage(chatId, err.Error()))
+				_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, err.Error()))
 				continue
 			}
 			if user.TelegramId != 0 {
-				t.bot.Send(tgbotapi.NewMessage(chatId, fmt.Sprintf("You have already token. %s", user.Token)))
+				_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, fmt.Sprintf("You have already token. %s", user.Token)))
 				continue
 			}
 
@@ -73,10 +79,10 @@ func (t telegramClient) GetMessages() {
 				TelegramDisplayName: userTelegramName,
 			})
 
-			t.bot.Send(tokenMsg)
-			t.bot.Send(tgbotapi.NewMessage(chatId, "You have to give this token on our site."))
+			_, _ = t.bot.Send(tokenMsg)
+			_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, "You have to give this token on our site."))
 		} else {
-			t.bot.Send(tgbotapi.NewMessage(chatId, "Invalid command"))
+			_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, "Invalid command"))
 		}
 	}
 }

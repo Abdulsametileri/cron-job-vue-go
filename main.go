@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/config"
 	"github.com/Abdulsametileri/cron-job-vue-go/controllers"
 	"github.com/Abdulsametileri/cron-job-vue-go/database"
@@ -66,6 +67,7 @@ func main() {
 	srv := &http.Server{
 		Addr: ":3000",
 	}
+	fmt.Printf("Server is starting at %s \n", srv.Addr)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			log.Fatal(err.Error())

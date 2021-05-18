@@ -28,5 +28,7 @@
     "time": "Saat boş bırakılamaz.",
     "repeatType": "Tekrarlama aralığı boş bırakılamaz."
   },
-  "operationSuccess": "İşleminiz başarılı bir şekilde yapıldı."
+  "operationSuccess": "İşleminiz başarılı bir şekilde yapıldı.",
+  "delete": "Sil",
+  "jobsEmpty": "Henüz bir alarm oluşturmadığınızdan bomboş bir liste sayfası görüyorsunuz."
 }

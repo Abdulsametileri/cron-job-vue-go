@@ -1,10 +1,10 @@
 package cronclient
 
 import (
-	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/infra/telegramclient"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
+	"github.com/Abdulsametileri/cron-job-vue-go/utils"
 	"github.com/go-co-op/gocron"
 	"time"
 )
@@ -30,8 +30,7 @@ type cronClient struct {
 }
 
 func NewCronClient(js jobservice.JobService, tc telegramclient.TelegramClient) CronClient {
-	location, err := time.LoadLocation("Europe/Istanbul")
-	fmt.Println(err)
+	location, _ := time.LoadLocation("Europe/Istanbul")
 	scheduleClient := gocron.NewScheduler(location)
 	scheduleClient.StartAsync()
 
@@ -62,11 +61,14 @@ func (c cronClient) Schedule(job models.Job) error {
 	c.sch.At(job.Time)
 
 	scheduledJob, err := c.sch.Do(func() {
-		fmt.Printf("image url %s \n", job.ImageUrl)
 		err := c.tc.SendImage(job.UserTelegramId, job.ImageUrl)
-		fmt.Printf("telegrma err %v \n", err)
+		if err != nil {
+			c.tc.SendMessageForDebug("Schedule Job Telegram Send Image" + err.Error())
+		}
 	})
+
 	if err != nil {
+		c.tc.SendMessageForDebug("Cron Schedule " + utils.PrettyPrint(scheduledJob) + " models.Job=" + utils.PrettyPrint(job) + err.Error())
 		return err
 	}
 	scheduledJob.Tag(job.Tag)

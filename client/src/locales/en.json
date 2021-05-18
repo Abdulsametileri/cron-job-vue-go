@@ -28,5 +28,7 @@
     "time": "Time cannot leave blank.",
     "repeatType": "Repeat type cannot be empty"
   },
-  "operationSuccess": "Operation has been made successfully"
+  "operationSuccess": "Operation has been made successfully",
+  "delete": "Delete",
+  "jobsEmpty": "You haven't created alarm yet. So the list is empty"
 }

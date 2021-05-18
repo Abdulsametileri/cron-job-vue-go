@@ -110,6 +110,10 @@ func (client awsClient) DetermineS3ImageUrl(userId int64, fileName string) strin
 
 type telegramClient struct{}
 
+func (tc *telegramClient) SendMessageForDebug(msg string) {
+
+}
+
 func (tc *telegramClient) GetMessages() {
 
 }

@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div v-if="jobs.length === 0">You have no alarm</div>
-    <div v-for="(job,index) in jobs" :key="index">
+    <div v-if="jobs.length === 0">
+      <div class="w-100">
+        <p class="text-center">{{ $t('jobsEmpty') }}</p>
+      </div>
+    </div>
+    <div v-else v-for="(job,index) in jobs" :key="index">
       <b-card>
         <b-card-title>
           Alarm: {{ job.name }}
@@ -9,7 +13,7 @@
 
         <b-card-sub-title class="float-right">
           <b-button variant="danger" @click="deleteAlarm(job.tag)">
-            DELETE
+            {{ $t('delete') }}
             <b-icon icon="trash"></b-icon>
           </b-button>
         </b-card-sub-title>
@@ -24,7 +28,8 @@
 
         <div class="my-4"></div>
 
-        <b-img :src="job.imageUrl"></b-img>
+        <b-img fluid-grow
+            :src="job.imageUrl"></b-img>
       </b-card>
     </div>
   </div>
