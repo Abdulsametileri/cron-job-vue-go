@@ -1,0 +1,21 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: cron-job-ec2
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run Build
+        run: docker build -t cron-job-vue-go .
+
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
