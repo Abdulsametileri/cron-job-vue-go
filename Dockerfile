@@ -1,6 +1,6 @@
 FROM node:lts-alpine as VueBuilder
 COPY client/ client/
-RUN cd client && yarn build
+RUN cd client && yarn install --frozen-lockfile && yarn build
 
 FROM golang:alpine AS GoBuilder
 WORKDIR /app
