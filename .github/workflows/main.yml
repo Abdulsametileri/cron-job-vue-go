@@ -11,7 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
+      - name: Prune
+        run: docker system prune -f
+
+      - name: Stop Container
+        run: docker stop cjvg || true
+
       - name: Make envfile
         uses: SpicyPizza/create-envfile@v1
         with:
@@ -23,11 +29,8 @@ jobs:
           envkey_RM_AWS_REGION: ${{ secrets.RM_AWS_REGION }}
           envkey_RM_AWS_BUCKET_NAME: ${{ secrets.RM_AWS_BUCKET_NAME }}
 
-      - name: Stop
-        run: docker stop cjvg || true
-
-      - name: Build
+      - name: Build Image
         run: docker build -t cron-job-vue-go .
 
-      - name: Run
+      - name: Run Container
         run: docker run --name=cjvg --rm -d -p 3000:3000 --dns 8.8.8.8 cron-job-vue-go
