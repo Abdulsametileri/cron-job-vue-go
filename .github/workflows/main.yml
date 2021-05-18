@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Prune
-        run: docker system prune -f
+      #- name: Prune
+       # run: docker system prune -f
 
       - name: Stop Container
         run: docker stop cjvg || true
