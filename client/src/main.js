@@ -13,29 +13,28 @@ import messages from '@/mixins/messages'
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
-i18n.locale = process.env.VUE_APP_LOCALE || 'tr';
+i18n.locale = 'tr';
 
 Vue.config.productionTip = false
 
 Vue.mixin({
     data() {
         return {
-            appLocal: i18n.locale,
             isDevelopment: process.env.NODE_ENV === "development",
             repeatTypes: [
-                {value: -1, text: this.$t('weekDays.default')},
-                {value: 1, text: this.$t('weekDays.monday')},
-                {value: 2, text: this.$t('weekDays.tuesday')},
-                {value: 3, text: this.$t('weekDays.wednesday')},
-                {value: 4, text: this.$t('weekDays.thursday')},
-                {value: 5, text: this.$t('weekDays.friday')},
-                {value: 6, text: this.$t('weekDays.saturday')},
-                {value: 0, text: this.$t('weekDays.sunday')},
-                {value: 7, text: this.$t('weekDays.all')},
+                {value: -1, text: i18n.tc('weekDays.default')},
+                {value: 1, text: i18n.tc('weekDays.monday')},
+                {value: 2, text: i18n.tc('weekDays.tuesday')},
+                {value: 3, text: i18n.tc('weekDays.wednesday')},
+                {value: 4, text: i18n.tc('weekDays.thursday')},
+                {value: 5, text: i18n.tc('weekDays.friday')},
+                {value: 6, text: i18n.tc('weekDays.saturday')},
+                {value: 0, text: i18n.tc('weekDays.sunday')},
+                {value: 7, text: i18n.tc('weekDays.all')},
             ],
             indexStrToWeekDay: {
-                "-1": this.$t('weekDays.default'),
-                "1": this.$t('weekDays.monday'),
+                "-1": i18n.tc('weekDays.default'),
+                "1": i18n.tc('weekDays.monday'),
             }
         };
     },

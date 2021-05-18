@@ -5,6 +5,13 @@
         <b-nav pills align="center">
           <b-nav-item exact exact-active-class="active" :to="{name: 'AlarmList'}">{{ $t("listAlarm") }}</b-nav-item>
           <b-nav-item exact exact-active-class="active" :to="{name: 'AlarmCreate'}">{{ $t("createAlarm") }}</b-nav-item>
+          <div class="d-flex ml-3">
+            <b-form-select v-model="$i18n.locale">
+              <b-form-select-option value="tr">TR</b-form-select-option>
+              <b-form-select-option value="en">EN</b-form-select-option>
+            </b-form-select>
+          </div>
+
         </b-nav>
         <hr>
         <router-view/>
@@ -32,6 +39,7 @@ export default {
   name: 'app',
   data() {
     return {
+      lang: 'tr',
       isAuthenticated: false,
       token: '',
     }

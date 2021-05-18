@@ -1,7 +1,7 @@
 {
   "createAlarm": "Alarm Oluştur",
   "listAlarm": "Alarmları Listele",
-  "telegramBotMsg": "Tokeni almak için aşağıdaki linkten botun adresine tıklayıp. /token yazın. Sonrasında botun gönderdiği tokeni token bölümüne yazın",
+  "telegramBotMsg": "Tokeni almak için aşağıdaki linkten botun adresine tıklayıp. /token yazın. Sonrasında botun gönderdiği tokeni alttaki 'Token' bölümüne yazın",
   "fileUploadPlaceholder": "Resim Seç",
   "fileDropPlaceholder": "Buraya bırakın",
   "image": "Resim",

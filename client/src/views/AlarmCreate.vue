@@ -17,7 +17,7 @@
       <b-form-group :class="marginTop"
                     :label="$t('time')" label-for="timepicker">
         <b-form-timepicker id="timepicker"
-                           :locale="appLocal"
+                           :locale="$i18n.locale"
                            :placeholder="$t('timePickerPlaceHolder')"
                            v-model="form.time"
                            now-button
