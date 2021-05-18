@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"github.com/Abdulsametileri/cron-job-vue-go/config"
 	"github.com/Abdulsametileri/cron-job-vue-go/controllers"
@@ -17,6 +18,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
 
 //go:embed client/dist
@@ -58,12 +61,23 @@ func main() {
 	http.HandleFunc("/api/list-alarm", alarmController.ListAlarm)
 	http.HandleFunc("/api/delete-alarm", alarmController.DeleteAlarm)
 
-	log.Println("Starting HTTP server at http://localhost:3000 ...")
-
-	port := "3000"
-	if os.Getenv("port") != "" {
-		port = os.Getenv(port)
+	srv := &http.Server{
+		Addr: ":3000",
 	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatal(err.Error())
+		}
+	}()
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	c := make(chan os.Signal, 1)
+
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
+
+	sig := <-c
+	log.Println("Got signal:", sig)
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+
+	_ = srv.Shutdown(ctx)
 }
