@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -18,6 +19,8 @@ func TestPrettyPrint(t *testing.T) {
 			Time:           "22:10",
 			Status:         models.JobValid,
 		}
-		fmt.Println(PrettyPrint(job))
+		msg, err := PrettyPrint(job)
+		fmt.Println(msg)
+		require.NoError(t, err)
 	})
 }

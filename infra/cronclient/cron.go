@@ -68,7 +68,9 @@ func (c cronClient) Schedule(job models.Job) error {
 	})
 
 	if err != nil {
-		c.tc.SendMessageForDebug("Cron Schedule " + utils.PrettyPrint(scheduledJob) + " models.Job=" + utils.PrettyPrint(job) + err.Error())
+		prettyScheduledJob, _ := utils.PrettyPrint(scheduledJob)
+		prettyDbJob, _ := utils.PrettyPrint(job)
+		c.tc.SendMessageForDebug("Cron Schedule " + prettyScheduledJob + " models.Job=" + prettyDbJob + err.Error())
 		return err
 	}
 	scheduledJob.Tag(job.Tag)

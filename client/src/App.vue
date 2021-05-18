@@ -11,7 +11,6 @@
               <b-form-select-option value="en">EN</b-form-select-option>
             </b-form-select>
           </div>
-
         </b-nav>
         <hr>
         <router-view/>
