@@ -214,5 +214,11 @@ func (ac alarmController) DeleteAlarm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = ac.cc.RemoveJobByTag(tag)
+	if err != nil {
+		ac.tc.SendMessageForDebug(fmt.Sprintf("error removing job by tag %s %s", tag, err.Error()))
+		return
+	}
+
 	ac.bc.Data(w, http.StatusOK, nil, "")
 }

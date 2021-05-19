@@ -21,6 +21,7 @@ var IndexToWeekDay = map[string]time.Weekday{
 
 type CronClient interface {
 	Schedule(job models.Job) error
+	RemoveJobByTag(tag string) error
 }
 
 type cronClient struct {
@@ -48,6 +49,10 @@ func NewCronClient(js jobservice.JobService, tc telegramclient.TelegramClient) C
 	}
 
 	return cronClient
+}
+
+func (c cronClient) RemoveJobByTag(tag string) error {
+	return c.sch.RemoveByTag(tag)
 }
 
 func (c cronClient) Schedule(job models.Job) error {
