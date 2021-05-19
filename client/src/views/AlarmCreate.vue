@@ -20,7 +20,6 @@
                            :locale="$i18n.locale"
                            :placeholder="$t('timePickerPlaceHolder')"
                            v-model="form.time"
-                           now-button
                            class="mb-2"></b-form-timepicker>
       </b-form-group>
 
