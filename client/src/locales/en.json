@@ -20,7 +20,14 @@
     "thursday": "Thursday",
     "friday": "Friday",
     "saturday": "Saturday",
-    "all": "All days"
+    "all": "All day in week",
+    "twoWeekSunday": "Sunday in Every two week",
+    "twoWeekMonday": "Monday in Every two week",
+    "twoWeekTuesday": "Tuesday in Every two week",
+    "twoWeekWednesday": "Wednesday in Every two week",
+    "twoWeekThursday": "Thursday in Every two week",
+    "twoWeekFriday": "Friday in Every two week",
+    "twoWeekSaturday": "Saturday in Every two week"
   },
   "formError": {
     "name": "Name cannot be empty.",

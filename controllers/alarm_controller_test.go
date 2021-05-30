@@ -32,7 +32,7 @@ func TestAlarmController(t *testing.T) {
 			res := parseBody(w)
 
 			assert.Equal(t, res.Code, http.StatusBadRequest)
-			assert.Equal(t, res.Message, ErrTokenNotFoundInDB.Error())
+			assert.Equal(t, res.Message, ErrFieldNotFound("token").Error())
 		})
 		t.Run("Non empty token but getting empty name error", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
@@ -43,7 +43,7 @@ func TestAlarmController(t *testing.T) {
 			res := parseBody(w)
 
 			assert.Equal(t, res.Code, http.StatusBadRequest)
-			assert.Equal(t, res.Message, ErrNameNotFound.Error())
+			assert.Equal(t, res.Message, ErrFieldNotFound("name").Error())
 		})
 		t.Run("Non empty {token, name} but getting empty time error", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
@@ -55,7 +55,7 @@ func TestAlarmController(t *testing.T) {
 			res := parseBody(w)
 
 			assert.Equal(t, res.Code, http.StatusBadRequest)
-			assert.Equal(t, res.Message, ErrTimeNotFound.Error())
+			assert.Equal(t, res.Message, ErrFieldNotFound("time").Error())
 		})
 
 		t.Run("Non empty {token, name, time} but getting empty repeatType error", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestAlarmController(t *testing.T) {
 			res := parseBody(w)
 
 			assert.Equal(t, res.Code, http.StatusBadRequest)
-			assert.Equal(t, res.Message, ErrRepeatTypeNotFound.Error())
+			assert.Equal(t, res.Message, ErrFieldNotFound("repeat time").Error())
 		})
 		t.Run("Non empty {token,name,time,repeatType} but getting reading image file err", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)

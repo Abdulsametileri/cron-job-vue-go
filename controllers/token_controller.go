@@ -29,7 +29,7 @@ func (t tokenController) ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	token := r.URL.Query().Get("token")
 	if token == "" {
-		t.bc.Error(w, http.StatusBadRequest, ErrTokenNotFoundInDB)
+		t.bc.Error(w, http.StatusBadRequest, ErrFieldNotFound("token"))
 		return
 	}
 

@@ -39,7 +39,7 @@ func TestTokenController(t *testing.T) {
 		_ = json.Unmarshal(body, props)
 
 		assert.Equal(t, props.Code, http.StatusBadRequest)
-		assert.Equal(t, props.Message, ErrTokenNotFoundInDB.Error())
+		assert.Equal(t, props.Message, ErrFieldNotFound("token").Error())
 	})
 	t.Run("user does not exist with specified token", func(t *testing.T) {
 		w, req := createHttpReq(http.MethodGet, "/api/validate-token/?token=not-exist-token", nil)

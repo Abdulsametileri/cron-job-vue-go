@@ -6,17 +6,26 @@ import (
 	"github.com/Abdulsametileri/cron-job-vue-go/services/jobservice"
 	"github.com/Abdulsametileri/cron-job-vue-go/utils"
 	"github.com/go-co-op/gocron"
+	"strconv"
 	"time"
 )
 
-var IndexToWeekDay = map[string]time.Weekday{
-	"0": time.Sunday,
-	"1": time.Monday,
-	"2": time.Tuesday,
-	"3": time.Wednesday,
-	"4": time.Thursday,
-	"5": time.Friday,
-	"6": time.Saturday,
+var IndexToWeekDay = map[int]time.Weekday{
+	0: time.Sunday,
+	1: time.Monday,
+	2: time.Tuesday,
+	3: time.Wednesday,
+	4: time.Thursday,
+	5: time.Friday,
+	6: time.Saturday,
+
+	8:  time.Monday,
+	9:  time.Tuesday,
+	10: time.Wednesday,
+	11: time.Thursday,
+	12: time.Friday,
+	13: time.Saturday,
+	14: time.Sunday,
 }
 
 type CronClient interface {
@@ -56,12 +65,18 @@ func (c cronClient) RemoveJobByTag(tag string) error {
 }
 
 func (c cronClient) Schedule(job models.Job) error {
-	c.sch.Every(1)
-	val, ok := IndexToWeekDay[job.RepeatType]
+	repeatTypeInt, _ := strconv.Atoi(job.RepeatType)
+
+	val, ok := IndexToWeekDay[repeatTypeInt]
 	if ok {
+		if repeatTypeInt <= 6 {
+			c.sch.Every(1)
+		} else {
+			c.sch.Every(2)
+		}
 		c.sch.Day().Weekday(val)
 	} else {
-		c.sch.Days()
+		c.sch.Every(1).Days()
 	}
 	c.sch.At(job.Time)
 

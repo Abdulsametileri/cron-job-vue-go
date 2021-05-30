@@ -20,7 +20,14 @@
     "thursday": "Perşembe",
     "friday": "Cuma",
     "saturday": "Cumartesi",
-    "all": "Hepsi"
+    "all": "Haftanın Her Günü",
+    "twoWeekSunday": "2 Haftada Bir Pazar",
+    "twoWeekMonday": "2 Haftada Bir Pazartesi",
+    "twoWeekTuesday": "2 Haftada Bir Salı",
+    "twoWeekWednesday": "2 Haftada Bir Çarşamba",
+    "twoWeekThursday": "2 Haftada Bir Perşembe",
+    "twoWeekFriday": "2 Haftada Bir Cuma",
+    "twoWeekSaturday": "2 Haftada Bir Cumartesi"
   },
   "formError": {
     "name": "İsim boş bırakılamaz.",

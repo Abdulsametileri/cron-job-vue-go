@@ -15,10 +15,7 @@ import (
 
 var (
 	ErrMethodNotAllowed       = errors.New("Method not allowed")
-	ErrTokenNotFoundInDB      = errors.New("You have to specify token")
-	ErrNameNotFound           = errors.New("You have to specify name")
-	ErrTimeNotFound           = errors.New("You have to specify time")
-	ErrRepeatTypeNotFound     = errors.New("You have to specify repeat time")
+	ErrFieldNotFound          = func(field string) error { return fmt.Errorf("You have to specify %s", field) }
 	ErrReadingFile            = errors.New("Error while reading image file")
 	ErrDb                     = errors.New("DB error occured")
 	ErrTokenDoesNotExistInUrl = errors.New("Token does not exist")
@@ -78,22 +75,22 @@ func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
 	uploadedFileType := r.FormValue("fileType")
 
 	if token == "" {
-		ac.bc.Error(w, http.StatusBadRequest, ErrTokenNotFoundInDB)
+		ac.bc.Error(w, http.StatusBadRequest, ErrFieldNotFound("token"))
 		return
 	}
 
 	if name == "" {
-		ac.bc.Error(w, http.StatusBadRequest, ErrNameNotFound)
+		ac.bc.Error(w, http.StatusBadRequest, ErrFieldNotFound("name"))
 		return
 	}
 
 	if gettime == "" {
-		ac.bc.Error(w, http.StatusBadRequest, ErrTimeNotFound)
+		ac.bc.Error(w, http.StatusBadRequest, ErrFieldNotFound("time"))
 		return
 	}
 
 	if repeatType == "" || repeatType == "-1" {
-		ac.bc.Error(w, http.StatusBadRequest, ErrRepeatTypeNotFound)
+		ac.bc.Error(w, http.StatusBadRequest, ErrFieldNotFound("repeat time"))
 		return
 	}
 
