@@ -2,6 +2,7 @@ package jobrepo
 
 import (
 	"context"
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository"
 	"github.com/google/uuid"
@@ -15,6 +16,45 @@ import (
 func cleanCollection(t *testing.T, jobCollection *mongo.Collection) {
 	errDrop := jobCollection.Drop(context.Background())
 	require.NoError(t, errDrop)
+}
+
+func TestJobRepository_PaginateAllValidJobs(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	ctx := context.Background()
+	for i := 0; i < 100; i++ {
+		var jobStatus models.JobStatus
+		if i%2 == 0 {
+			jobStatus = models.JobDeleted
+		} else {
+			jobStatus = models.JobValid
+		}
+
+		jobCollection.InsertOne(ctx, models.Job{
+			Name:      fmt.Sprintf("job-%d", i+1),
+			UserToken: "token",
+			Status:    jobStatus,
+		})
+	}
+
+	jobRepo := NewJobRepository(jobCollection)
+	jobs, err := jobRepo.PaginateAllValidJobs(1, 10)
+	require.NoError(t, err)
+	require.Equal(t, len(jobs), 10)
+	require.Equal(t, jobs[0].Name, "job-1")
+	require.Equal(t, jobs[9].Name, "job-10")
+
+	jobs, err = jobRepo.PaginateAllValidJobs(2, 5)
+	require.NoError(t, err)
+	require.Equal(t, len(jobs), 5)
+	require.Equal(t, jobs[0].Name, "job-6")
+	require.Equal(t, jobs[4].Name, "job-10")
 }
 
 func TestJobRepository_ListAllValidJobs(t *testing.T) {

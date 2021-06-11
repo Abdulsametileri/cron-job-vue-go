@@ -7,6 +7,7 @@ import (
 
 type JobService interface {
 	ListAllValidJobsByToken(token string) ([]models.Job, error)
+	PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error)
 	ListAllValidJobs() ([]models.Job, error)
 	AddJob(job models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
@@ -25,6 +26,10 @@ func NewJobService(jRepo jobrepo.Repo) JobService {
 
 func (j jobService) ListAllValidJobs() ([]models.Job, error) {
 	return j.Repo.ListAllValidJobs()
+}
+
+func (j jobService) PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error) {
+	return j.Repo.PaginateAllValidJobs(pageNo, pageSize)
 }
 
 func (j jobService) ListAllValidJobsByToken(token string) ([]models.Job, error) {

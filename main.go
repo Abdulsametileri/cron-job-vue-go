@@ -47,9 +47,7 @@ func main() {
 	awsClient := awsclient.NewAwsClient()
 
 	telegramClient := telegramclient.NewTelegramClient(userService)
-	if !config.IsDebug {
-		go telegramClient.GetMessages()
-	}
+	go telegramClient.GetMessages()
 
 	cronClient := cronclient.NewCronClient(jobService, telegramClient)
 
@@ -58,7 +56,7 @@ func main() {
 	alarmController := controllers.NewAlarmController(baseController, userService, jobService, awsClient, telegramClient, cronClient)
 
 	http.Handle("/", http.FileServer(http.FS(distFS)))
-
+	http.HandleFunc("/api/paginate-alarms", alarmController.PaginateAlarm)
 	http.HandleFunc("/api/validate-token", tokenController.ValidateToken)
 	http.HandleFunc("/api/create-alarm", alarmController.CreateAlarm)
 	http.HandleFunc("/api/list-alarm", alarmController.ListAlarm)

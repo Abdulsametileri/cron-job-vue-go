@@ -12,6 +12,7 @@ import (
 
 type Repo interface {
 	ListAllValidJobs() ([]models.Job, error)
+	PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error)
 	ListAllValidJobsByToken(token string) ([]models.Job, error)
 	AddJob(models.Job) error
 	GetJobByFields(map[string]interface{}) (models.Job, error)
@@ -44,6 +45,27 @@ func (j jobRepository) ListAllValidJobs() ([]models.Job, error) {
 	if jobs == nil {
 		return make([]models.Job, 0), nil
 	}
+	return jobs, nil
+}
+
+func (j *jobRepository) PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error) {
+	limit := int64(pageSize)
+	skip := int64(pageNo-1) * limit
+
+	cur, err := j.collection.Find(context.Background(), bson.D{}, &options.FindOptions{
+		Skip:  &skip,
+		Limit: &limit,
+	})
+	if err != nil {
+		return []models.Job{}, err
+	}
+	defer cur.Close(context.Background())
+
+	var jobs []models.Job
+	if err := cur.All(context.Background(), &jobs); err != nil {
+		return []models.Job{}, err
+	}
+
 	return jobs, nil
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/Abdulsametileri/cron-job-vue-go/services/userservice"
 	"github.com/google/uuid"
 	"net/http"
+	"strconv"
 )
 
 var (
@@ -28,12 +29,14 @@ var (
 	ErrUserDoesNotExist       = errors.New("Error user does not exist")
 	ErrGettingJobList         = errors.New("Error getting the job list")
 	ErrTagDoesNotExistInUrl   = errors.New("Tag does not exist in the url")
+	ErrPaginateJob            = errors.New("Error appearing when pagination attemp")
 )
 
 type AlarmController interface {
 	CreateAlarm(http.ResponseWriter, *http.Request)
 	ListAlarm(http.ResponseWriter, *http.Request)
 	DeleteAlarm(http.ResponseWriter, *http.Request)
+	PaginateAlarm(w http.ResponseWriter, r *http.Request)
 }
 
 type alarmController struct {
@@ -58,6 +61,31 @@ func NewAlarmController(
 		tc:  tc,
 		cc:  cc,
 	}
+}
+
+// curl "http://localhost:3000/api/paginate-alarms?pageNo=1&pageSize=10"
+func (ac alarmController) PaginateAlarm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		ac.bc.Error(w, http.StatusNotFound, ErrMethodNotAllowed)
+		return
+	}
+
+	pageNo, _ := strconv.Atoi(r.URL.Query().Get("pageNo"))
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if pageNo == 0 {
+		pageNo = 1
+	}
+	if pageSize == 0 {
+		pageSize = 10
+	}
+
+	jobs, err := ac.js.PaginateAllValidJobs(pageNo, pageSize)
+	if err != nil {
+		ac.bc.Error(w, http.StatusBadRequest, ErrPaginateJob)
+		return
+	}
+
+	ac.bc.Data(w, http.StatusOK, jobs, "")
 }
 
 func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {
