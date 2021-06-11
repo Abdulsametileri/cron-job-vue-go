@@ -65,7 +65,7 @@ func (t telegramClient) GetMessages() {
 				continue
 			}
 			if user.TelegramId != 0 {
-				_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, fmt.Sprintf("You have already token. %s", user.Token)))
+				_, _ = t.bot.Send(tgbotapi.NewMessage(chatId, fmt.Sprintf("You already have token. %s", user.Token)))
 				continue
 			}
 
