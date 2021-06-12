@@ -1,7 +1,10 @@
 package controllers
 
 import (
-	"github.com/magiconair/properties/assert"
+	"encoding/json"
+	"fmt"
+	"github.com/Abdulsametileri/cron-job-vue-go/models"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 )
@@ -14,6 +17,50 @@ func TestAlarmController(t *testing.T) {
 	telegramClient := &telegramClient{}
 
 	alarmCtrl := NewAlarmController(bc, userService, jobService, awsClient, telegramClient, nil)
+
+	t.Run("Paginate Alarm", func(t *testing.T) {
+		t.Run("Is get not allow", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodPost, "/api/paginate-alarm", nil)
+			alarmCtrl.PaginateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusNotFound)
+			assert.Equal(t, res.Message, ErrMethodNotAllowed.Error())
+		})
+		t.Run("Getting second page with size 5 is empty", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/paginate-alarm?pageNo=2&pageSize=5", nil)
+			alarmCtrl.PaginateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusOK)
+			assert.Equal(t, res.Message, "")
+			assert.Equal(t, len(res.Data.([]interface{})), 0)
+		})
+		t.Run("Getting first page with size 5 is full", func(t *testing.T) {
+			w, req := createHttpReq(http.MethodGet, "/api/paginate-alarm?pageNo=1&pageSize=5", nil)
+			alarmCtrl.PaginateAlarm(w, req)
+
+			res := parseBody(w)
+
+			assert.Equal(t, res.Code, http.StatusOK)
+			assert.Equal(t, res.Message, "")
+
+			var jobs []models.Job
+
+			val, _ := res.Data.(interface{})
+			jsonString, _ := json.Marshal(&val)
+			_ = json.Unmarshal(jsonString, &jobs)
+
+			assert.Len(t, jobs, 5)
+			for i := 0; i < 5; i++ {
+				assert.Equal(t, jobs[i].Tag, fmt.Sprintf("tag-%d", i))
+				assert.Equal(t, jobs[i].Name, fmt.Sprintf("name-%d", i))
+				assert.EqualValues(t, jobs[i].Status, models.JobValid)
+			}
+		})
+	})
 
 	t.Run("CreateAlarm", func(t *testing.T) {
 		t.Run("Is Get Not Allowed", func(t *testing.T) {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"mime/multipart"
 )
@@ -44,6 +45,22 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 }
 
 type jobSvc struct{}
+
+func (js *jobSvc) PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error) {
+	if pageNo == 1 {
+		res := make([]models.Job, 0)
+		for i := 0; i < pageSize; i++ {
+			res = append(res, models.Job{
+				Tag:    fmt.Sprintf("tag-%d", i),
+				Name:   fmt.Sprintf("name-%d", i),
+				Status: models.JobValid,
+			})
+		}
+		return res, nil
+	}
+
+	return []models.Job{}, nil
+}
 
 func (js *jobSvc) ListAllValidJobsByToken(token string) ([]models.Job, error) {
 	if token == "job-list-err" {
