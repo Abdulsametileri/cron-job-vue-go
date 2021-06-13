@@ -1,6 +1,7 @@
 package jobservice
 
 import (
+	"errors"
 	"github.com/Abdulsametileri/cron-job-vue-go/models"
 	"github.com/Abdulsametileri/cron-job-vue-go/repository/jobrepo"
 )
@@ -42,6 +43,9 @@ func (j jobService) ListAllValidJobsByToken(token string) ([]models.Job, error) 
 }
 
 func (j jobService) AddJob(job models.Job) error {
+	if job.Name == "" {
+		return errors.New("mfc was here")
+	}
 	return j.Repo.AddJob(job)
 }
 
