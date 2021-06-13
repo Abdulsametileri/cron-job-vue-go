@@ -18,6 +18,36 @@ func cleanCollection(t *testing.T, jobCollection *mongo.Collection) {
 	require.NoError(t, errDrop)
 }
 
+func TestJobRepository_GetNumberOfValidJobs(t *testing.T) {
+	client, errSetupDB := repository.SetupDB()
+	require.NoError(t, errSetupDB)
+
+	jobCollection, errCollection := repository.SetupCollection(client, "jobs")
+	require.NoError(t, errCollection)
+
+	defer cleanCollection(t, jobCollection)
+
+	for i := 0; i < 1000; i++ {
+		var jobStatus models.JobStatus = models.JobValid
+
+		if i > 990 {
+			jobStatus = models.JobDeleted
+		}
+
+		jobCollection.InsertOne(context.Background(), models.Job{
+			Tag:    fmt.Sprintf("tag-%d", i),
+			Name:   fmt.Sprintf("name-%d", i),
+			Status: jobStatus,
+		})
+	}
+
+	jobRep := NewJobRepository(jobCollection)
+	noOfValidDocs, err := jobRep.GetNumberOfValidJobs()
+
+	require.NoError(t, err)
+	require.EqualValues(t, noOfValidDocs, 991)
+}
+
 func TestJobRepository_PaginateAllValidJobs(t *testing.T) {
 	client, errSetupDB := repository.SetupDB()
 	require.NoError(t, errSetupDB)

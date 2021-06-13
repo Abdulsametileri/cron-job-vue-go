@@ -36,7 +36,6 @@ func TestAlarmController(t *testing.T) {
 
 			assert.Equal(t, res.Code, http.StatusOK)
 			assert.Equal(t, res.Message, "")
-			assert.Equal(t, len(res.Data.([]interface{})), 0)
 		})
 		t.Run("Getting first page with size 5 is full", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/paginate-alarm?pageNo=1&pageSize=5", nil)
@@ -47,12 +46,15 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusOK)
 			assert.Equal(t, res.Message, "")
 
+			val, cvrtOk := res.Data.(map[string]interface{})
+			assert.True(t, cvrtOk)
+
 			var jobs []models.Job
+			jS, err := json.Marshal(val["jobs"])
+			assert.NoError(t, err)
+			json.Unmarshal(jS, &jobs)
 
-			val, _ := res.Data.(interface{})
-			jsonString, _ := json.Marshal(&val)
-			_ = json.Unmarshal(jsonString, &jobs)
-
+			assert.EqualValues(t, 100, val["total"])
 			assert.Len(t, jobs, 5)
 			for i := 0; i < 5; i++ {
 				assert.Equal(t, jobs[i].Tag, fmt.Sprintf("tag-%d", i))
@@ -104,7 +106,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrFieldNotFound("time").Error())
 		})
-
 		t.Run("Non empty {token, name, time} but getting empty repeatType error", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodPost, "/api/create-alarm", nil)
 			req.Form.Set("token", "token")
@@ -152,7 +153,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrDb.Error())
 		})
-
 		t.Run("when job exist db error", func(t *testing.T) {
 			body, contentType := fileUploadRequest()
 
@@ -193,7 +193,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrJobAlreadyExist.Error())
 		})
-
 		t.Run("Getting non exist token error", func(t *testing.T) {
 			body, contentType := fileUploadRequest()
 
@@ -234,7 +233,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrS3Upload.Error())
 		})
-
 		t.Run("When job created, job err occured, delete uploaded file in s3 also occured", func(t *testing.T) {
 			body, contentType := fileUploadRequest()
 
@@ -296,7 +294,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrTokenDoesNotExistInUrl.Error())
 		})
-
 		t.Run("Error occured in db when validating the token", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=db-err", nil)
 			alarmCtrl.ListAlarm(w, req)
@@ -306,7 +303,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrDb.Error())
 		})
-
 		t.Run("Error user cannot exist given token", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=not-exist-token", nil)
 			alarmCtrl.ListAlarm(w, req)
@@ -316,7 +312,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrUserDoesNotExist.Error())
 		})
-
 		t.Run("Error getting the job list", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=job-list-err", nil)
 			alarmCtrl.ListAlarm(w, req)
@@ -325,7 +320,6 @@ func TestAlarmController(t *testing.T) {
 			assert.Equal(t, res.Code, http.StatusBadRequest)
 			assert.Equal(t, res.Message, ErrGettingJobList.Error())
 		})
-
 		t.Run("Getting job list empty", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=123", nil)
 			alarmCtrl.ListAlarm(w, req)
@@ -338,7 +332,6 @@ func TestAlarmController(t *testing.T) {
 
 			assert.Equal(t, lenItems, 0)
 		})
-
 		t.Run("Getting the job list item", func(t *testing.T) {
 			w, req := createHttpReq(http.MethodGet, "/api/list-alarm/?token=three-job-list-item", nil)
 			alarmCtrl.ListAlarm(w, req)

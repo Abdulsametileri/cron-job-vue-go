@@ -8,6 +8,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/uuid v1.2.0
+	github.com/k0kubun/pp v3.0.1+incompatible // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0

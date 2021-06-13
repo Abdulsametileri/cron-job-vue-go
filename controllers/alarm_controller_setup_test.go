@@ -46,6 +46,10 @@ func (uc *userSvc) GetUserByToken(token string) (models.User, error) {
 
 type jobSvc struct{}
 
+func (js *jobSvc) GetNumberOfValidJobs() (int, error) {
+	return 100, nil
+}
+
 func (js *jobSvc) PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error) {
 	if pageNo == 1 {
 		res := make([]models.Job, 0)

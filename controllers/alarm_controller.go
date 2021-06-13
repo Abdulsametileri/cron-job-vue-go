@@ -15,21 +15,22 @@ import (
 )
 
 var (
-	ErrMethodNotAllowed       = errors.New("Method not allowed")
-	ErrFieldNotFound          = func(field string) error { return fmt.Errorf("You have to specify %s", field) }
-	ErrReadingFile            = errors.New("Error while reading image file")
-	ErrDb                     = errors.New("DB error occured")
-	ErrTokenDoesNotExistInUrl = errors.New("Token does not exist")
-	ErrS3Upload               = errors.New("Error uploading file to s3")
-	ErrDeleteFileS3           = errors.New("Error deleting file in s3")
-	ErrAddingJob              = errors.New("Error adding job to Db")
-	ErrGettingJob             = errors.New("Error getting job in DB")
-	ErrJobAlreadyExist        = errors.New("Error you already create your job before")
-	ErrJobDelete              = errors.New("Error deleting the speficied tag job in db")
-	ErrUserDoesNotExist       = errors.New("Error user does not exist")
-	ErrGettingJobList         = errors.New("Error getting the job list")
-	ErrTagDoesNotExistInUrl   = errors.New("Tag does not exist in the url")
-	ErrPaginateJob            = errors.New("Error appearing when pagination attemp")
+	ErrMethodNotAllowed               = errors.New("Method not allowed")
+	ErrFieldNotFound                  = func(field string) error { return fmt.Errorf("You have to specify %s", field) }
+	ErrReadingFile                    = errors.New("Error while reading image file")
+	ErrDb                             = errors.New("DB error occured")
+	ErrTokenDoesNotExistInUrl         = errors.New("Token does not exist")
+	ErrS3Upload                       = errors.New("Error uploading file to s3")
+	ErrDeleteFileS3                   = errors.New("Error deleting file in s3")
+	ErrAddingJob                      = errors.New("Error adding job to Db")
+	ErrGettingJob                     = errors.New("Error getting job in DB")
+	ErrJobAlreadyExist                = errors.New("Error you already create your job before")
+	ErrJobDelete                      = errors.New("Error deleting the speficied tag job in db")
+	ErrUserDoesNotExist               = errors.New("Error user does not exist")
+	ErrGettingJobList                 = errors.New("Error getting the job list")
+	ErrTagDoesNotExistInUrl           = errors.New("Tag does not exist in the url")
+	ErrPaginateJob                    = errors.New("Error appearing when pagination attemp")
+	ErrCountingTotalNumberOfValidJobs = errors.New("Error counting total number of valid jobs")
 )
 
 type AlarmController interface {
@@ -85,7 +86,17 @@ func (ac alarmController) PaginateAlarm(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ac.bc.Data(w, http.StatusOK, jobs, "")
+	noOfValidJobs, err := ac.js.GetNumberOfValidJobs()
+	if err != nil {
+		ac.bc.Error(w, http.StatusInternalServerError, ErrCountingTotalNumberOfValidJobs)
+	}
+
+	ret := make(map[string]interface{}, 0)
+
+	ret["total"] = noOfValidJobs
+	ret["jobs"] = jobs
+
+	ac.bc.Data(w, http.StatusOK, ret, "")
 }
 
 func (ac alarmController) CreateAlarm(w http.ResponseWriter, r *http.Request) {

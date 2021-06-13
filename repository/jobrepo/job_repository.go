@@ -11,6 +11,7 @@ import (
 )
 
 type Repo interface {
+	GetNumberOfValidJobs() (int, error)
 	ListAllValidJobs() ([]models.Job, error)
 	PaginateAllValidJobs(pageNo, pageSize int) ([]models.Job, error)
 	ListAllValidJobsByToken(token string) ([]models.Job, error)
@@ -25,6 +26,16 @@ type jobRepository struct {
 
 func NewJobRepository(collection *mongo.Collection) Repo {
 	return &jobRepository{collection: collection}
+}
+
+func (j *jobRepository) GetNumberOfValidJobs() (int, error) {
+	noOfValidDocs, err := j.collection.
+		CountDocuments(context.Background(), bson.D{{"status", models.JobValid}}, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(noOfValidDocs), nil
 }
 
 func (j jobRepository) ListAllValidJobs() ([]models.Job, error) {
